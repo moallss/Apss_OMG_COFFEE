@@ -26,7 +26,6 @@ import '../../features/auth/forgot_password/views/forgot_password_view.dart';
 import '../../features/owner/resep_menu/bindings/resep_menu_binding.dart';
 import '../../features/owner/resep_menu/views/resep_menu_view.dart';
 
-// ✅ PERBAIKI PATH IMPORT (tambahkan ../../)
 import '../../features/owner/barang_operasional/views/tambah_barang_view.dart';
 import '../../features/owner/barang_operasional/bindings/tambah_barang_binding.dart';
 
@@ -103,9 +102,8 @@ class AppPages {
       name: _Paths.forgotPassword,
       page: () => const ForgotPasswordView(),
       binding: ForgotPasswordBinding(),
-    ), // ✅ TUTUP GetPage forgotPassword DENGAN BENAR
+    ),
 
-    // ✅ TAMBAHKAN ROUTE TAMBAH BARANG DI SINI (SEJAJAR, BUKAN NESTED)
     GetPage(
       name: _Paths.tambahBarang,
       page: () => TambahBarangView(),
