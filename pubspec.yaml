@@ -1,0 +1,43 @@
+# PATH FILE: pubspec.yaml
+name: flutter_omgcoffee
+description: "Aplikasi manajemen operasional coffee keliling OMG COFFEE."
+publish_to: "none" # Mencegah publikasi tidak sengaja ke pub.dev
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0" # Wajib ada untuk menghindari error SDK constraint
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management & Routing (GetX)
+  get: ^4.6.6
+
+  # Backend & Offline-First Database
+  supabase_flutter: ^2.5.0
+  sqflite: ^2.3.2
+  path_provider: ^2.1.2
+
+  # Utilities & UI Support
+  connectivity_plus: ^6.0.1 # Deteksi status online/offline untuk SyncService
+  intl: ^0.19.0 # Format mata uang (Rupiah) dan tanggal
+  google_fonts: ^6.2.1 # Memuat font Outfit & Inter
+  flutter_dotenv: ^5.1.0 # Membaca file .env (Supabase URL/Key)
+  image_picker: ^1.2.3 # Upload foto bukti (Stock Adjustment/Nota)
+  cached_network_image: ^3.3.1 # Optimasi gambar menu dari Supabase Storage
+  shimmer: ^3.0.0 # Efek animasi skeleton loading
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0 # Rekomendasi standar linting Flutter
+
+flutter:
+  uses-material-design: true
+
+  # Deklarasi aset agar bisa dibaca oleh aplikasi
+  assets:
+    - .env
+    - assets/images/
+    - assets/fonts/
