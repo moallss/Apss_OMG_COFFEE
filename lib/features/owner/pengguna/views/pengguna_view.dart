@@ -1,3 +1,4 @@
+// PATH FILE: lib/features/owner/pengguna/views/pengguna_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -61,53 +62,41 @@ class PenggunaView extends GetView<PenggunaController> {
                       )),
                   const SizedBox(height: 20),
 
-                  // LABEL PILIH PENGELOLAAN
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('PILIH PENGELOLAAN',
-                          style: GoogleFonts.inter(
-                              color: AppColors.ink,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800)),
-                      const SizedBox(height: 4),
-                      Container(
-                        width: 40,
-                        height: 3,
-                        decoration: BoxDecoration(
-                          color: AppColors.yellow,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ],
-                  ),
+                  // LABEL PILIH PENGELOLAAN (TANPA GARIS KUNING)
+                  Text('PILIH PENGELOLAAN',
+                      style: GoogleFonts.inter(
+                          color: AppColors.ink,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800)),
                   const SizedBox(height: 14),
 
-                  // CARD ROLE: KARYAWAN
+                  // CARD ROLE: KARYAWAN (BACKGROUND PINK)
                   Obx(() => _buildRoleCard(
                         icon: Icons.engineering_rounded,
-                        tint: const Color(0xFFFFE1EE),
+                        bgColor: const Color(0xFFFF2D7A),
+                        iconBgColor: const Color(0xFFFFE1EE),
+                        iconColor: const Color(0xFFEF2B7C),
                         title: 'Karyawan',
                         badge: '${controller.jumlahKaryawan.value} ORANG',
-                        badgeColor: AppColors.primary,
+                        badgeTextColor: AppColors.primary,
                         desc:
                             'Absen selfie, akses aplikasi, jadwal & tracking lokasi',
-                        initials: controller.karyawanInitials,
                         footerInfo:
                             '${controller.karyawanAktif.value} aktif jualan',
                         onTap: controller.openKaryawan,
                       )),
                   const SizedBox(height: 14),
 
-                  // CARD ROLE: INVESTOR
+                  // CARD ROLE: INVESTOR (BACKGROUND HIJAU)
                   Obx(() => _buildRoleCard(
                         icon: Icons.payments_rounded,
-                        tint: const Color(0xFFE3EEE5),
+                        bgColor: const Color(0xFF2D7A4F),
+                        iconBgColor: const Color(0xFFE3EEE5),
+                        iconColor: const Color(0xFF2D7A4F),
                         title: 'Investor',
                         badge: '${controller.jumlahInvestor.value} ORANG',
-                        badgeColor: AppColors.brandGreen,
+                        badgeTextColor: AppColors.brandGreen,
                         desc: 'Penanaman modal, bagi hasil & akses laporan',
-                        initials: controller.investorInitials,
                         footerInfo:
                             'Total ${controller.totalBagiHasil.value}% Bagi Hasil',
                         onTap: controller.openInvestor,
@@ -145,76 +134,50 @@ class PenggunaView extends GetView<PenggunaController> {
   }
 
   // ==========================================
-  // HEADER PINK dengan pola dots
+  // HEADER PINK (TANPA DOTS & BINTANG)
   // ==========================================
   Widget _buildHeader(BuildContext context) {
     final topPad = MediaQuery.of(context).padding.top;
     return Container(
       color: AppColors.primary,
       padding: EdgeInsets.fromLTRB(20, topPad + 14, 20, 24),
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Pola dots seluruh header
-          Positioned.fill(
-            child: IgnorePointer(
-              child: CustomPaint(painter: _HeaderDotsPainter()),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: () => Get.back(),
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: AppColors.appWhite,
-                        shape: BoxShape.circle,
-                        border: appBorder(),
-                        boxShadow: AppShadows.hard(2),
-                      ),
-                      child: const Icon(Icons.arrow_back_rounded,
-                          color: AppColors.ink, size: 20),
-                    ),
+              GestureDetector(
+                onTap: () => Get.back(),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.appWhite,
+                    shape: BoxShape.circle,
+                    border: appBorder(),
+                    boxShadow: AppShadows.hard(2),
                   ),
-                  const BrutalIcon(
-                    icon: Icons.star_rounded,
-                    color: AppColors.yellow,
-                    size: 36,
-                    outlineWidth: 3.5,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-              Text('Pengguna',
-                  style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontWeight: FontWeight.w900,
-                      shadows: const [
-                        Shadow(color: Colors.black, offset: Offset(2, 2))
-                      ])),
-              const SizedBox(height: 6),
-              Container(
-                width: 56,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.yellow,
-                  borderRadius: BorderRadius.circular(2),
+                  child: const Icon(Icons.arrow_back_rounded,
+                      color: AppColors.ink, size: 20),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text('Kelola hak akses karyawan & investor usaha',
-                  style: GoogleFonts.inter(
-                      color: Colors.white70,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600)),
             ],
           ),
+          const SizedBox(height: 18),
+          Text('Pengguna',
+              style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 30,
+                  fontWeight: FontWeight.w900,
+                  shadows: const [
+                    Shadow(color: Colors.black, offset: Offset(2, 2))
+                  ])),
+          const SizedBox(height: 8),
+          Text('Kelola hak akses karyawan & investor usaha',
+              style: GoogleFonts.inter(
+                  color: Colors.white70,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -252,12 +215,13 @@ class PenggunaView extends GetView<PenggunaController> {
   // ==========================================
   Widget _buildRoleCard({
     required IconData icon,
-    required Color tint,
+    required Color bgColor,
+    required Color iconBgColor,
+    required Color iconColor,
     required String title,
     required String badge,
-    required Color badgeColor,
+    required Color badgeTextColor,
     required String desc,
-    required List<String> initials,
     required String footerInfo,
     required VoidCallback onTap,
   }) {
@@ -266,7 +230,7 @@ class PenggunaView extends GetView<PenggunaController> {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.appWhite,
+          color: bgColor,
           borderRadius: BorderRadius.circular(16),
           border: appBorder(),
           boxShadow: AppShadows.hard(2),
@@ -274,16 +238,16 @@ class PenggunaView extends GetView<PenggunaController> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Icon lingkaran
+            // Icon lingkaran dengan background terang
             Container(
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: tint,
+                color: iconBgColor,
                 shape: BoxShape.circle,
                 border: appBorder(1.5),
               ),
-              child: Icon(icon, color: AppColors.ink, size: 24),
+              child: Icon(icon, color: iconColor, size: 24),
             ),
             const SizedBox(width: 12),
             // Konten tengah
@@ -291,13 +255,13 @@ class PenggunaView extends GetView<PenggunaController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // === KONTEN JUDUL & DESKRIPSI ===
+                  // Judul & Badge
                   Row(
                     children: [
                       Expanded(
                         child: Text(title,
                             style: GoogleFonts.inter(
-                                color: AppColors.ink,
+                                color: Colors.white,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w900)),
                       ),
@@ -305,13 +269,13 @@ class PenggunaView extends GetView<PenggunaController> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: badgeColor,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(50),
                           border: appBorder(1),
                         ),
                         child: Text(badge,
                             style: GoogleFonts.inter(
-                                color: Colors.white,
+                                color: badgeTextColor,
                                 fontSize: 8,
                                 fontWeight: FontWeight.w800)),
                       ),
@@ -320,46 +284,35 @@ class PenggunaView extends GetView<PenggunaController> {
                   const SizedBox(height: 4),
                   Text(desc,
                       style: GoogleFonts.inter(
-                          color: AppColors.muted,
+                          color: Colors.white,
                           fontSize: 9,
                           fontWeight: FontWeight.w600)),
                   const SizedBox(height: 10),
 
-                  // ✅ GARIS PEMBATAS antara Judul+Deskripsi dengan Info Akun
+                  // GARIS PEMBATAS
                   Container(
                     height: 1.5,
                     width: double.infinity,
-                    color: AppColors.ink.withOpacity(0.15),
+                    color: Colors.white.withOpacity(0.3),
                   ),
                   const SizedBox(height: 10),
 
-                  // === KONTEN INFO AKUN + STATUS ===
+                  // Foto Profile Orang + Status
                   Row(
                     children: [
-                      // Info Akun (avatar initials) - di KIRI
+                      // Foto Profile (3 orang)
                       Row(
-                        children: initials
-                            .map((i) => Container(
-                                  margin: const EdgeInsets.only(right: 5),
-                                  width: 22,
-                                  height: 22,
-                                  decoration: BoxDecoration(
-                                    color: tint,
-                                    shape: BoxShape.circle,
-                                    border: appBorder(1),
-                                  ),
-                                  child: Center(
-                                    child: Text(i,
-                                        style: GoogleFonts.inter(
-                                            color: AppColors.ink,
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.w800)),
-                                  ),
-                                ))
-                            .toList(),
+                        children: [
+                          _profilePhoto('https://i.pravatar.cc/150?u=karyawan1',
+                              Colors.white),
+                          _profilePhoto('https://i.pravatar.cc/150?u=karyawan2',
+                              Colors.white),
+                          _profilePhoto('https://i.pravatar.cc/150?u=karyawan3',
+                              Colors.white),
+                        ],
                       ),
                       const Spacer(),
-                      // Status - di SEBELAH KANAN info akun
+                      // Status
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -367,14 +320,14 @@ class PenggunaView extends GetView<PenggunaController> {
                             width: 6,
                             height: 6,
                             decoration: const BoxDecoration(
-                              color: AppColors.brandGreen,
+                              color: Colors.white,
                               shape: BoxShape.circle,
                             ),
                           ),
                           const SizedBox(width: 4),
                           Text(footerInfo,
                               style: GoogleFonts.inter(
-                                  color: AppColors.brandGreen,
+                                  color: Colors.white,
                                   fontSize: 8,
                                   fontWeight: FontWeight.w700)),
                         ],
@@ -402,23 +355,53 @@ class PenggunaView extends GetView<PenggunaController> {
       ),
     );
   }
-}
 
-// ==========================================
-// PAINTER POLA DOTS HEADER
-// ==========================================
-class _HeaderDotsPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withOpacity(0.25);
-    const spacing = 18.0;
-    for (double y = spacing; y < size.height; y += spacing) {
-      for (double x = spacing; x < size.width; x += spacing) {
-        canvas.drawCircle(Offset(x, y), 1.5, paint);
-      }
-    }
+  // Widget Foto Profile Orang
+  Widget _profilePhoto(String url, Color bgColor) {
+    return Container(
+      margin: const EdgeInsets.only(right: 5),
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        color: bgColor,
+        shape: BoxShape.circle,
+        border: appBorder(1),
+      ),
+      child: ClipOval(
+        child: Image.network(
+          url,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            color: bgColor,
+            child: Center(
+              child: Text('?',
+                  style: GoogleFonts.inter(
+                      color: AppColors.ink,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800)),
+            ),
+          ),
+          loadingBuilder: (_, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              color: bgColor,
+              child: Center(
+                child: SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                        : null,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

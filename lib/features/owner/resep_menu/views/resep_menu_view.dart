@@ -39,60 +39,45 @@ class ResepMenuView extends GetView<ResepMenuController> {
     final topPad = MediaQuery.of(context).padding.top;
     return Container(
       color: AppColors.primary,
-      padding: EdgeInsets.fromLTRB(20, topPad + 14, 20, 50),
-      child: Stack(
+      padding: EdgeInsets.fromLTRB(20, topPad + 14, 20, 42),
+      child: Row(
         children: [
-          const Positioned(
-            top: -8,
-            right: 0,
-            child: BrutalDots(cols: 4, rows: 3),
+          GestureDetector(
+            onTap: () => Get.back(),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.appWhite,
+                shape: BoxShape.circle,
+                border: appBorder(),
+                boxShadow: AppShadows.hard(2),
+              ),
+              child: const Icon(Icons.arrow_back_rounded,
+                  color: AppColors.ink, size: 20),
+            ),
           ),
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => Get.back(),
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppColors.appWhite,
-                    shape: BoxShape.circle,
-                    border: appBorder(),
-                    boxShadow: AppShadows.hard(2),
-                  ),
-                  child: const Icon(Icons.arrow_back_rounded,
-                      color: AppColors.ink, size: 20),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Resep Menu',
-                        style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            shadows: const [
-                              Shadow(color: Colors.black, offset: Offset(2, 2))
-                            ])),
-                    const SizedBox(height: 2),
-                    Text('Kelola resep dan HPP menu',
-                        style: GoogleFonts.inter(
-                            color: Colors.white70,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ),
-              const BrutalIcon(
-                icon: Icons.star_rounded,
-                color: AppColors.yellow,
-                size: 36,
-                outlineWidth: 3.5,
-              ),
-            ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Resep Menu',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        shadows: const [
+                          Shadow(color: Colors.black, offset: Offset(2, 2))
+                        ])),
+                const SizedBox(height: 2),
+                Text('Kelola resep dan HPP menu',
+                    style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600)),
+              ],
+            ),
           ),
         ],
       ),
@@ -100,21 +85,24 @@ class ResepMenuView extends GetView<ResepMenuController> {
   }
 
   Widget _buildTabs() {
-    return Container(
-      width: 300,
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: AppColors.appWhite,
-        borderRadius: BorderRadius.circular(50),
-        border: appBorder(),
-        boxShadow: AppShadows.hard(3),
-      ),
-      child: Row(
-        children: [
-          SizedBox(width: 140, child: _tabButton(0, 'Buat Resep')),
-          const SizedBox(width: 4),
-          SizedBox(width: 140, child: _tabButton(1, 'Daftar Resep')),
-        ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: AppColors.appWhite,
+          borderRadius: BorderRadius.circular(50),
+          border: appBorder(),
+          boxShadow: AppShadows.hard(3),
+        ),
+        child: Row(
+          children: [
+            Expanded(child: _tabButton(0, 'Buat Resep')),
+            const SizedBox(width: 6),
+            Expanded(child: _tabButton(1, 'Daftar Resep')),
+          ],
+        ),
       ),
     );
   }
@@ -165,7 +153,7 @@ class ResepMenuView extends GetView<ResepMenuController> {
                 color: AppColors.appWhite,
                 borderRadius: BorderRadius.circular(16),
                 border: appBorder(),
-                boxShadow: AppShadows.hard(3),
+                boxShadow: AppShadows.hard(4),
               ),
               child: Column(
                 children: [
@@ -295,27 +283,35 @@ class ResepMenuView extends GetView<ResepMenuController> {
               )),
           GestureDetector(
             onTap: () {},
-            child: CustomPaint(
-              painter: _DashedRRectPainter(AppColors.ink, 14),
-              child: Container(
-                height: 56,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF3D6),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.add_circle_outline_rounded,
-                        color: AppColors.ink, size: 20),
-                    const SizedBox(width: 8),
-                    Text('Tambah Bahan',
-                        style: GoogleFonts.inter(
-                            color: Colors.black,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800)),
-                  ],
-                ),
+            child: Container(
+              height: 56,
+              decoration: BoxDecoration(
+                color: AppColors.yellow,
+                borderRadius: BorderRadius.circular(14),
+                border: appBorder(),
+                boxShadow: AppShadows.hard(3),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: AppColors.appWhite,
+                      shape: BoxShape.circle,
+                      border: appBorder(1.5),
+                    ),
+                    child: const Icon(Icons.add_rounded,
+                        color: AppColors.ink, size: 18),
+                  ),
+                  const SizedBox(width: 8),
+                  Text('Tambah Bahan',
+                      style: GoogleFonts.inter(
+                          color: AppColors.ink,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800)),
+                ],
               ),
             ),
           ),
@@ -358,27 +354,35 @@ class ResepMenuView extends GetView<ResepMenuController> {
               )),
           GestureDetector(
             onTap: () {},
-            child: CustomPaint(
-              painter: _DashedRRectPainter(AppColors.ink, 14),
-              child: Container(
-                height: 56,
-                decoration: BoxDecoration(
-                  color: AppColors.appWhite,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.add_circle_outline_rounded,
-                        color: AppColors.ink, size: 20),
-                    const SizedBox(width: 8),
-                    Text('Tambah Barang',
-                        style: GoogleFonts.inter(
-                            color: Colors.black,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800)),
-                  ],
-                ),
+            child: Container(
+              height: 56,
+              decoration: BoxDecoration(
+                color: AppColors.yellow,
+                borderRadius: BorderRadius.circular(14),
+                border: appBorder(),
+                boxShadow: AppShadows.hard(3),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: AppColors.appWhite,
+                      shape: BoxShape.circle,
+                      border: appBorder(1.5),
+                    ),
+                    child: const Icon(Icons.add_rounded,
+                        color: AppColors.ink, size: 18),
+                  ),
+                  const SizedBox(width: 8),
+                  Text('Tambah Barang',
+                      style: GoogleFonts.inter(
+                          color: AppColors.ink,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800)),
+                ],
               ),
             ),
           ),
@@ -473,18 +477,17 @@ class ResepMenuView extends GetView<ResepMenuController> {
                               ],
                             ),
                             const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    height: 44,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                          color: const Color(0xFF1A1A1A),
-                                          width: 2),
-                                    ),
+                            Container(
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: const Color(0xFF1A1A1A), width: 2),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
                                     child: TextField(
                                       keyboardType: TextInputType.number,
                                       textAlign: TextAlign.center,
@@ -493,12 +496,20 @@ class ResepMenuView extends GetView<ResepMenuController> {
                                           fontWeight: FontWeight.bold),
                                       decoration: InputDecoration(
                                         border: InputBorder.none,
+                                        enabledBorder: InputBorder.none,
+                                        focusedBorder: InputBorder.none,
+                                        disabledBorder: InputBorder.none,
+                                        errorBorder: InputBorder.none,
+                                        focusedErrorBorder: InputBorder.none,
                                         hintText:
                                             '${controller.buangSisa.value}',
                                         hintStyle: GoogleFonts.inter(
                                             fontSize: 14,
                                             fontWeight: FontWeight.bold),
-                                        contentPadding: EdgeInsets.zero,
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 12),
+                                        isDense: true,
                                       ),
                                       onChanged: (val) {
                                         final cleanVal = val.replaceAll(
@@ -510,27 +521,25 @@ class ResepMenuView extends GetView<ResepMenuController> {
                                       },
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  height: 44,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF3A6F43),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                        color: const Color(0xFF1A1A1A),
-                                        width: 2),
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF3A6F43),
+                                      borderRadius: const BorderRadius.only(
+                                        topRight: Radius.circular(8),
+                                        bottomRight: Radius.circular(8),
+                                      ),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text('%',
+                                        style: GoogleFonts.inter(
+                                            color: Colors.white,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold)),
                                   ),
-                                  alignment: Alignment.center,
-                                  child: Text('%',
-                                      style: GoogleFonts.inter(
-                                          color: Colors.white,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold)),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -571,37 +580,34 @@ class ResepMenuView extends GetView<ResepMenuController> {
                               ],
                             ),
                             const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Container(
-                                  height: 44,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFFC94D),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                        color: const Color(0xFF1A1A1A),
-                                        width: 2),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text('Rp',
-                                      style: GoogleFonts.inter(
-                                          color: Colors.black,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold)),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Container(
+                            Container(
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: const Color(0xFF1A1A1A), width: 2),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 44,
                                     height: 44,
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                          color: const Color(0xFF1A1A1A),
-                                          width: 2),
+                                      color: const Color(0xFFFFC94D),
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(8),
+                                        bottomLeft: Radius.circular(8),
+                                      ),
                                     ),
+                                    alignment: Alignment.center,
+                                    child: Text('Rp',
+                                        style: GoogleFonts.inter(
+                                            color: Colors.black,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                  Expanded(
                                     child: TextField(
                                       keyboardType: TextInputType.number,
                                       style: GoogleFonts.inter(
@@ -609,6 +615,11 @@ class ResepMenuView extends GetView<ResepMenuController> {
                                           fontWeight: FontWeight.bold),
                                       decoration: InputDecoration(
                                         border: InputBorder.none,
+                                        enabledBorder: InputBorder.none,
+                                        focusedBorder: InputBorder.none,
+                                        disabledBorder: InputBorder.none,
+                                        errorBorder: InputBorder.none,
+                                        focusedErrorBorder: InputBorder.none,
                                         hintText:
                                             '${controller.biayaLain.value}',
                                         hintStyle: GoogleFonts.inter(
@@ -617,6 +628,7 @@ class ResepMenuView extends GetView<ResepMenuController> {
                                         contentPadding:
                                             const EdgeInsets.symmetric(
                                                 horizontal: 10),
+                                        isDense: true,
                                       ),
                                       onChanged: (val) {
                                         final cleanVal = val.replaceAll(
@@ -628,8 +640,8 @@ class ResepMenuView extends GetView<ResepMenuController> {
                                       },
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -870,50 +882,107 @@ class ResepMenuView extends GetView<ResepMenuController> {
 
           ///...
           const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-            decoration: BoxDecoration(
-              color: AppColors.appWhite,
-              borderRadius: BorderRadius.circular(14),
-              border: appBorder(),
-              boxShadow: AppShadows.hard(2),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildSummaryItem(
-                    value: '6',
-                    label: 'RESEP\nTERSIMPAN',
-                    valueColor: AppColors.ink,
-                    icon: null,
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(12),
+                    border: appBorder(),
+                    boxShadow: AppShadows.hard(2),
+                  ),
+                  child: Column(
+                    children: [
+                      Text('6',
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900)),
+                      const SizedBox(height: 4),
+                      Text('RESEP\nTERSIMPAN',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              height: 1.2)),
+                    ],
                   ),
                 ),
-                Container(
-                    width: 1,
-                    height: 40,
-                    color: AppColors.ink.withValues(alpha: 0.3)),
-                Expanded(
-                  child: _buildSummaryItem(
-                    value: '+43%',
-                    label: 'RATA-RATA\nMARGIN',
-                    valueColor: AppColors.brandGreen,
-                    icon: null,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandGreen,
+                    borderRadius: BorderRadius.circular(12),
+                    border: appBorder(),
+                    boxShadow: AppShadows.hard(2),
+                  ),
+                  child: Column(
+                    children: [
+                      Text('+43%',
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900)),
+                      const SizedBox(height: 4),
+                      Text('RATA-RATA\nMARGIN',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              height: 1.2)),
+                    ],
                   ),
                 ),
-                Container(
-                    width: 1,
-                    height: 40,
-                    color: AppColors.ink.withValues(alpha: 0.3)),
-                Expanded(
-                  child: _buildSummaryItem(
-                    value: '2',
-                    label: 'PERLU\nPERHATIAN',
-                    valueColor: const Color(0xFFFFB800),
-                    icon: Icons.warning_amber_rounded,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFB800),
+                    borderRadius: BorderRadius.circular(12),
+                    border: appBorder(),
+                    boxShadow: AppShadows.hard(2),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('2',
+                              style: GoogleFonts.outfit(
+                                  color: AppColors.ink,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w900)),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.warning_amber_rounded,
+                              color: AppColors.ink, size: 18),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text('PERLU\nPERHATIAN',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                              color: AppColors.ink,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              height: 1.2)),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           GridView.count(
@@ -1106,23 +1175,17 @@ class ResepMenuView extends GetView<ResepMenuController> {
             ? const Color(0xFFFFB800)
             : AppColors.brandGreen;
 
-    final marginLabel = marginStatus == 'kritis'
-        ? 'KRITIS'
-        : marginStatus == 'tipis'
-            ? 'TIPIS'
-            : null;
-
     final IconData menuIcon = category.toLowerCase() == 'kopi'
         ? Icons.coffee_rounded
         : Icons.local_drink_rounded;
 
     final Color iconColor = category.toLowerCase() == 'kopi'
-        ? const Color(0xFF7F4827)
-        : const Color(0xFF3A6F43);
+        ? const Color(0xFF8B4513)
+        : const Color(0xFF2D7A4F);
 
-    final Color iconTint = category.toLowerCase() == 'kopi'
-        ? const Color(0xFFF1E4DA)
-        : const Color(0xFFE3EEE5);
+    final Color categoryColor = category.toLowerCase() == 'kopi'
+        ? const Color(0xFF8B4513)
+        : const Color(0xFF2D7A4F);
 
     return Container(
       padding: const EdgeInsets.all(10),
@@ -1136,68 +1199,48 @@ class ResepMenuView extends GetView<ResepMenuController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Row 1: Icon + Margin (tanpa kategori)
           Row(
             children: [
+              // Icon solid
               Container(
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: iconTint,
+                  color: iconColor,
                   borderRadius: BorderRadius.circular(10),
                   border: appBorder(1.5),
                 ),
-                child: Icon(menuIcon, color: iconColor, size: 18),
+                child: Icon(menuIcon, color: Colors.white, size: 18),
               ),
               const Spacer(),
+              // Margin badge solid
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: marginColor.withValues(alpha: 0.15),
+                  color: marginColor,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: marginColor, width: 1.5),
+                  border: appBorder(1.5),
                 ),
-                child: Text(
-                  marginLabel != null
-                      ? '+${margin}% $marginLabel'
-                      : '+${margin}%',
-                  style: GoogleFonts.inter(
-                      color: marginColor,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w800),
-                ),
+                child: Text('+${margin}%',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800)),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                        color: AppColors.ink,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900)),
-              ),
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(color: AppColors.primary, width: 1.2),
-                ),
-                child: Text(category,
-                    style: GoogleFonts.inter(
-                        color: AppColors.primary,
-                        fontSize: 7,
-                        fontWeight: FontWeight.w700)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 3),
+          // Nama menu
+          Text(name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                  color: AppColors.ink,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900)),
+          const SizedBox(height: 2),
+          // Variant
           Text(variant,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1205,13 +1248,35 @@ class ResepMenuView extends GetView<ResepMenuController> {
                   color: AppColors.muted,
                   fontSize: 8,
                   fontWeight: FontWeight.w600)),
-          const SizedBox(height: 4),
-          Text('$bahanCount bahan • $barangCount barang',
-              style: GoogleFonts.inter(
-                  color: AppColors.muted,
-                  fontSize: 8,
-                  fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
+          // Row: Kategori (kiri) + Info bahan & barang (kanan)
+          Row(
+            children: [
+              // Kategori badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                decoration: BoxDecoration(
+                  color: categoryColor,
+                  borderRadius: BorderRadius.circular(6),
+                  border: appBorder(1),
+                ),
+                child: Text(category,
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w800)),
+              ),
+              const Spacer(),
+              // Info bahan & barang
+              Text('$bahanCount bhn • $barangCount brg',
+                  style: GoogleFonts.inter(
+                      color: AppColors.muted,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          // HPP Card
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             decoration: BoxDecoration(
@@ -1236,6 +1301,7 @@ class ResepMenuView extends GetView<ResepMenuController> {
             ),
           ),
           const SizedBox(height: 5),
+          // JUAL Card
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             decoration: BoxDecoration(
@@ -1260,6 +1326,7 @@ class ResepMenuView extends GetView<ResepMenuController> {
             ),
           ),
           const SizedBox(height: 8),
+          // Edit Button dengan border brutalisme
           SizedBox(
             width: double.infinity,
             height: 34,
@@ -1267,11 +1334,12 @@ class ResepMenuView extends GetView<ResepMenuController> {
               onPressed: () {},
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                elevation: 0,
+                elevation: 4,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
-                  side: const BorderSide(color: AppColors.ink, width: 1.5),
+                  side: const BorderSide(color: AppColors.ink, width: 2),
                 ),
+                shadowColor: AppColors.ink,
                 padding: EdgeInsets.zero,
               ),
               child: Row(

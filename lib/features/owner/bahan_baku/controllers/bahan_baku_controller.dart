@@ -278,6 +278,127 @@ class BahanBakuController extends GetxController {
     );
   }
 
+  // ==========================================
+  // KATEGORI BARU (CUSTOM)
+  // ==========================================
+  final RxList<Map<String, dynamic>> customKategoriList =
+      <Map<String, dynamic>>[].obs;
+
+  final newKategoriNama = TextEditingController();
+  final hexColorController = TextEditingController(text: '#6F4E37');
+  final newKategoriWarna = const Color(0xFF6F4E37).obs; // Default: Warna Kopi
+  final newKategoriIcon = Icons.eco_rounded.obs;
+
+  // Kategori Icon Picker
+  final selectedIconCategory = 'Semua'.obs;
+  final Map<String, List<Map<String, dynamic>>> iconCategories = {
+    'Semua': [
+      {'icon': Icons.eco_rounded, 'label': 'Bahan'},
+      {'icon': Icons.water_drop_rounded, 'label': 'Cair'},
+      {'icon': Icons.grain_rounded, 'label': 'Biji'},
+      {'icon': Icons.local_drink_rounded, 'label': 'Minum'},
+      {'icon': Icons.coffee_rounded, 'label': 'Kopi'},
+      {'icon': Icons.emoji_food_beverage_rounded, 'label': 'Teh'},
+      {'icon': Icons.bakery_dining_rounded, 'label': 'Roti'},
+      {'icon': Icons.cake_rounded, 'label': 'Kue'},
+      {'icon': Icons.cookie_rounded, 'label': 'Cookie'},
+      {'icon': Icons.icecream_rounded, 'label': 'Dingin'},
+      {'icon': Icons.restaurant_rounded, 'label': 'Sendok'},
+      {'icon': Icons.kitchen_rounded, 'label': 'Dapur'},
+      {'icon': Icons.blender_rounded, 'label': 'Blender'},
+      {'icon': Icons.inventory_2_rounded, 'label': 'Kotak'},
+      {'icon': Icons.abc_rounded, 'label': 'Huruf'},
+      {'icon': Icons.star_rounded, 'label': 'Bintang'},
+    ],
+    'Bahan': [
+      {'icon': Icons.eco_rounded, 'label': 'Bahan'},
+      {'icon': Icons.water_drop_rounded, 'label': 'Cair'},
+      {'icon': Icons.grain_rounded, 'label': 'Biji'},
+      {'icon': Icons.grass_rounded, 'label': 'Daun'},
+      {'icon': Icons.spa_rounded, 'label': 'Herbal'},
+      {'icon': Icons.nature_rounded, 'label': 'Alami'},
+    ],
+    'Minuman': [
+      {'icon': Icons.coffee_rounded, 'label': 'Kopi'},
+      {'icon': Icons.local_drink_rounded, 'label': 'Minum'},
+      {'icon': Icons.emoji_food_beverage_rounded, 'label': 'Teh'},
+      {'icon': Icons.local_cafe_rounded, 'label': 'Cangkir'},
+      {'icon': Icons.wine_bar_rounded, 'label': 'Sirup'},
+      {'icon': Icons.icecream_rounded, 'label': 'Dingin'},
+    ],
+    'Makanan': [
+      {'icon': Icons.bakery_dining_rounded, 'label': 'Roti'},
+      {'icon': Icons.cake_rounded, 'label': 'Kue'},
+      {'icon': Icons.cookie_rounded, 'label': 'Cookie'},
+      {'icon': Icons.local_pizza_rounded, 'label': 'Pizza'},
+      {'icon': Icons.set_meal_rounded, 'label': 'Makan'},
+      {'icon': Icons.breakfast_dining_rounded, 'label': 'Sarapan'},
+    ],
+    'Peralatan': [
+      {'icon': Icons.restaurant_rounded, 'label': 'Sendok'},
+      {'icon': Icons.kitchen_rounded, 'label': 'Dapur'},
+      {'icon': Icons.blender_rounded, 'label': 'Blender'},
+      {'icon': Icons.inventory_2_rounded, 'label': 'Kotak'},
+      {'icon': Icons.scale_rounded, 'label': 'Timbangan'},
+      {'icon': Icons.cleaning_services_rounded, 'label': 'Bersih'},
+    ],
+    'Lainnya': [
+      {'icon': Icons.abc_rounded, 'label': 'Huruf'},
+      {'icon': Icons.star_rounded, 'label': 'Bintang'},
+      {'icon': Icons.label_rounded, 'label': 'Label'},
+      {'icon': Icons.category_rounded, 'label': 'Kategori'},
+      {'icon': Icons.layers_rounded, 'label': 'Lapisan'},
+      {'icon': Icons.bookmark_rounded, 'label': 'Tanda'},
+    ],
+  };
+
+  void setSelectedIconCategory(String cat) => selectedIconCategory.value = cat;
+  void setNewKategoriWarna(Color c) => newKategoriWarna.value = c;
+  void setNewKategoriIcon(IconData i) => newKategoriIcon.value = i;
+
+  bool isValidHex(String hex) {
+    final clean = hex.replaceAll('#', '').trim();
+    if (clean.length != 6) return false;
+    return RegExp(r'^[0-9A-Fa-f]{6}$').hasMatch(clean);
+  }
+
+  void updateKategoriFromHex(String hex) {
+    final clean = hex.replaceAll('#', '').trim();
+    if (!isValidHex(hex)) return;
+    try {
+      final color = Color(int.parse('FF$clean', radix: 16));
+      newKategoriWarna.value = color;
+    } catch (e) {}
+  }
+
+  void simpanKategoriBaru() {
+    if (newKategoriNama.text.trim().isEmpty) {
+      AppDialogs.showCustomSnackbar(
+        title: 'Validasi Gagal',
+        message: 'Nama kategori wajib diisi.',
+        type: SnackbarType.warning,
+      );
+      return;
+    }
+
+    customKategoriList.add({
+      'label': newKategoriNama.text.trim(),
+      'icon': newKategoriIcon.value,
+      'color': newKategoriWarna.value,
+    });
+
+    newKategoriNama.clear();
+    newKategoriWarna.value = const Color(0xFF6F4E37);
+    newKategoriIcon.value = Icons.eco_rounded;
+
+    Get.back(); // Tutup bottom sheet
+    AppDialogs.showCustomSnackbar(
+      title: 'Berhasil',
+      message: 'Kategori baru berhasil ditambahkan.',
+      type: SnackbarType.success,
+    );
+  }
+
   @override
   void onClose() {
     tabPageController.dispose();
@@ -286,6 +407,20 @@ class BahanBakuController extends GetxController {
     stokMinController.dispose();
     hargaController.dispose();
     supplierController.dispose();
+    newKategoriNama.dispose();
+    hexColorController.dispose(); // <-- TAMBAH INI
     super.onClose();
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    // Listener untuk update live preview
+    newKategoriNama.addListener(() {
+      // Trigger update dengan mengubah warna sedikit (hack untuk force rebuild)
+      final currentColor = newKategoriWarna.value;
+      newKategoriWarna.value = currentColor;
+    });
   }
 }

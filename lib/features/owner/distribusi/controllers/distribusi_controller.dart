@@ -15,19 +15,19 @@ class DistribusiController extends GetxController {
   final karyawanList = <Map<String, dynamic>>[
     {
       'nama': 'Andi',
-      'fotoUrl': null,
+      'fotoUrl': 'https://i.pravatar.cc/150?u=andi',
       'role': 'Driver',
       'detail': 'Gerobak 01 · ID #DST-01',
     },
     {
       'nama': 'Bayu',
-      'fotoUrl': null,
+      'fotoUrl': 'https://i.pravatar.cc/150?u=bayu',
       'role': 'Driver',
       'detail': 'Gerobak 02 · ID #DST-02',
     },
     {
       'nama': 'Supri',
-      'fotoUrl': null,
+      'fotoUrl': 'https://i.pravatar.cc/150?u=supri',
       'role': 'Driver',
       'detail': 'Gerobak 03 · ID #DST-03',
     },
@@ -105,6 +105,14 @@ class DistribusiController extends GetxController {
 
   String getKategori(String item) => itemKategoriMap[item] ?? 'Lainnya';
 
+  String getKategoriKelompok(String item) {
+    final sub = itemKategoriMap[item] ?? '';
+    if (sub == 'Kemasan' || sub == 'Barang Operasional' || sub == 'Operasional') {
+      return 'BARANG OPERASIONAL';
+    }
+    return 'BAHAN BAKU';
+  }
+
   Color getKategoriColor(String kategori) {
     switch (kategori) {
       case 'Bahan Pokok':
@@ -135,6 +143,149 @@ class DistribusiController extends GetxController {
   final catatanController = TextEditingController();
 
   // ==========================================
+  // BOTTOM SHEET MASTER DATA & STATE
+  // ==========================================
+  final sheetTabIndex = 0.obs;
+  final sheetSearchQuery = ''.obs;
+
+  final masterBahanBaku = <Map<String, dynamic>>[
+    {
+      'icon': Icons.water_drop_rounded,
+      'iconColor': const Color(0xFF8B4513),
+      'category': 'PEMANIS',
+      'name': 'Gula Aren',
+      'stock': '1,8 kg',
+      'unit': 'satuan gram',
+      'percentage': 72,
+      'status': 'Aman',
+      'isEmpty': false,
+      'isCritical': false,
+    },
+    {
+      'icon': Icons.ac_unit_rounded,
+      'iconColor': AppColors.brandGreen,
+      'category': 'TOPPING',
+      'name': 'Es Batu',
+      'stock': '4 kg',
+      'unit': 'satuan gram',
+      'percentage': 85,
+      'status': 'Aman',
+      'isEmpty': false,
+      'isCritical': false,
+    },
+    {
+      'icon': Icons.coffee_rounded,
+      'iconColor': const Color(0xFF6B4F3A),
+      'category': 'TOPPING',
+      'name': 'Bubuk Matcha',
+      'stock': '200 g',
+      'unit': 'satuan gram',
+      'percentage': 20,
+      'status': 'Hampir Habis',
+      'isEmpty': false,
+      'isCritical': true,
+    },
+    {
+      'icon': Icons.inventory_2_rounded,
+      'iconColor': AppColors.primary,
+      'category': 'KOPI',
+      'name': 'Kopi Bubuk',
+      'stock': '2,5 kg',
+      'unit': 'satuan gram',
+      'percentage': 60,
+      'status': 'Tercatat',
+      'isEmpty': false,
+      'isCritical': false,
+    },
+    {
+      'icon': Icons.local_drink_rounded,
+      'iconColor': const Color(0xFF1A1A1A),
+      'category': 'DAIRY',
+      'name': 'Susu UHT',
+      'stock': '0 L',
+      'unit': 'satuan liter',
+      'percentage': 0,
+      'status': 'Habis',
+      'isEmpty': true,
+      'isCritical': false,
+    },
+  ];
+
+  final masterBarangOperasional = <Map<String, dynamic>>[
+    {
+      'icon': Icons.coffee_rounded,
+      'iconColor': const Color(0xFFFFB800),
+      'category': 'KEMASAN',
+      'name': 'Cup 16oz',
+      'stock': '120 pcs',
+      'unit': 'satuan pcs',
+      'percentage': 80,
+      'status': 'Aman',
+      'isEmpty': false,
+      'isCritical': false,
+    },
+    {
+      'icon': Icons.coffee_rounded,
+      'iconColor': AppColors.brandGreen,
+      'category': 'KEMASAN',
+      'name': 'Cup 22oz',
+      'stock': '85 pcs',
+      'unit': 'satuan pcs',
+      'percentage': 65,
+      'status': 'Aman',
+      'isEmpty': false,
+      'isCritical': false,
+    },
+    {
+      'icon': Icons.local_drink_rounded,
+      'iconColor': const Color(0xFF8B4513),
+      'category': 'KEMASAN',
+      'name': 'Sedotan Plastik',
+      'stock': '350 pcs',
+      'unit': 'satuan pcs',
+      'percentage': 70,
+      'status': 'Aman',
+      'isEmpty': false,
+      'isCritical': false,
+    },
+    {
+      'icon': Icons.cleaning_services_rounded,
+      'iconColor': AppColors.primary,
+      'category': 'OPERASIONAL',
+      'name': 'Tisu Kering',
+      'stock': '15 pack',
+      'unit': 'satuan pack',
+      'percentage': 50,
+      'status': 'Aman',
+      'isEmpty': false,
+      'isCritical': false,
+    },
+    {
+      'icon': Icons.shopping_bag_rounded,
+      'iconColor': const Color(0xFFFFB800),
+      'category': 'KEMASAN',
+      'name': 'Kantong Kresek',
+      'stock': '40 pcs',
+      'unit': 'satuan pcs',
+      'percentage': 25,
+      'status': 'Hampir Habis',
+      'isEmpty': false,
+      'isCritical': true,
+    },
+  ];
+
+  List<Map<String, dynamic>> get currentMasterList {
+    final list = sheetTabIndex.value == 0 ? masterBahanBaku : masterBarangOperasional;
+    final q = sheetSearchQuery.value.toLowerCase().trim();
+    if (q.isEmpty) return list;
+    return list.where((item) {
+      final name = (item['name'] as String).toLowerCase();
+      final cat = (item['category'] as String).toLowerCase();
+      return name.contains(q) || cat.contains(q);
+    }).toList();
+  }
+
+  // ==========================================
   // RIWAYAT + SEARCH + FILTER
   // ==========================================
   final searchQuery = ''.obs;
@@ -143,7 +294,7 @@ class DistribusiController extends GetxController {
   final riwayatDistribusi = <Map<String, dynamic>>[
     {
       'nama': 'Agus',
-      'fotoUrl': null,
+      'fotoUrl': 'https://i.pravatar.cc/150?u=agus',
       'waktu': '09:30 WIB',
       'status': 'Proses',
       'tanggal': DateTime.now(),
@@ -152,7 +303,7 @@ class DistribusiController extends GetxController {
     },
     {
       'nama': 'Bayu',
-      'fotoUrl': null,
+      'fotoUrl': 'https://i.pravatar.cc/150?u=bayu',
       'waktu': '08:15 WIB',
       'status': 'Sukses',
       'tanggal': DateTime.now(),
@@ -161,7 +312,7 @@ class DistribusiController extends GetxController {
     },
     {
       'nama': 'Supri',
-      'fotoUrl': null,
+      'fotoUrl': 'https://i.pravatar.cc/150?u=supri',
       'waktu': '16:45 WIB',
       'status': 'Sukses',
       'tanggal': DateTime.now().subtract(const Duration(days: 1)),
@@ -224,11 +375,14 @@ class DistribusiController extends GetxController {
   // ==========================================
   // ITEM CRUD
   // ==========================================
-  void tambahItem() {
+  void tambahItem({String? item, String? kategori, String? unit, String qty = '0'}) {
+    final itemName = item ?? itemOptions[0];
+    final kat = kategori ?? getKategoriKelompok(itemName);
     distribusiItems.add({
-      'item': itemOptions[0],
-      'unit': 'pcs',
-      'qtyController': TextEditingController(text: '0'),
+      'item': itemName,
+      'kategori': kat,
+      'unit': unit ?? (kat == 'BARANG OPERASIONAL' ? 'pcs' : 'gram'),
+      'qtyController': TextEditingController(text: qty),
     });
   }
 
@@ -239,6 +393,7 @@ class DistribusiController extends GetxController {
 
   void setItem(int i, String v) {
     distribusiItems[i]['item'] = v;
+    distribusiItems[i]['kategori'] = getKategoriKelompok(v);
     distribusiItems.refresh();
   }
 
@@ -301,7 +456,8 @@ class DistribusiController extends GetxController {
       (it['qtyController'] as TextEditingController).dispose();
     }
     distribusiItems.clear();
-    tambahItem();
+    tambahItem(item: 'Kopi Bubuk 500g', kategori: 'BAHAN BAKU', unit: 'gram');
+    tambahItem(item: 'Cup 16oz', kategori: 'BARANG OPERASIONAL', unit: 'pcs');
     catatanController.clear();
     selectedTabIndex.value = 1;
     tabPageController.jumpToPage(1);
@@ -310,7 +466,32 @@ class DistribusiController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    tambahItem();
+    distribusiItems.addAll([
+      {
+        'item': 'Kopi Bubuk 500g',
+        'kategori': 'BAHAN BAKU',
+        'unit': 'gram',
+        'qtyController': TextEditingController(text: '500'),
+      },
+      {
+        'item': 'Susu UHT',
+        'kategori': 'BAHAN BAKU',
+        'unit': 'liter',
+        'qtyController': TextEditingController(text: '2'),
+      },
+      {
+        'item': 'Cup 16oz',
+        'kategori': 'BARANG OPERASIONAL',
+        'unit': 'pcs',
+        'qtyController': TextEditingController(text: '50'),
+      },
+      {
+        'item': 'Sedotan',
+        'kategori': 'BARANG OPERASIONAL',
+        'unit': 'pack',
+        'qtyController': TextEditingController(text: '1'),
+      },
+    ]);
   }
 
   @override

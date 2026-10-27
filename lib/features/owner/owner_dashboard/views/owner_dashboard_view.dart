@@ -7,7 +7,6 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../app/routes/app_pages.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/app_dialogs.dart';
 import '../../../../core/widgets/brutal_kit.dart';
 import '../controllers/owner_dashboard_controller.dart';
@@ -17,7 +16,21 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
 
   static const Color _orange = Color(0xFFFFB800);
   static const Color _green = Color(0xFF2D7A4F);
-  static const Color _yellowTile = Color(0xFFFFD400);
+  static const Color _redSolid = Color(0xFFD32F2F);
+  static const Color _brown = Color(0xFF8B4513);
+
+  static const Map<String, Color> _katBg = {
+    'Bahan Pokok': _brown,
+    'Dairy': _orange,
+    'Sirup': Color(0xFFB45309),
+  };
+
+  static const List<Color> _avatarPalette = [
+    _orange,
+    AppColors.primary,
+    _green,
+    _brown,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -25,311 +38,270 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
 
     return Scaffold(
       backgroundColor: AppColors.cream,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 100), // ruang navbar floating
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ============================================
-            // 1. HEADER PINK SEPARUH + CARD OMZET STRADDLE
-            //    (setengah di pink, setengah di cream — sesuai desain)
-            // ============================================
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // --- Blok pink: hanya baris avatar + bell ---
-                Container(
-                  height: topPad + 126, // pink hanya sampai ±20% atas card
-                  color: AppColors.primary,
-                  child: Stack(
-                    children: [
-                      // ✅ DOTS: full background pink (layer paling bawah)
-                      const Positioned.fill(
-                        child: IgnorePointer(
-                          child: CustomPaint(painter: _DotGridPainter()),
-                        ),
-                      ),
-                      // ✅ PROFILE + BELL: center di area pink yang terlihat
-                      Positioned(
-                        top: topPad, // mulai di bawah status bar
-                        left: 20,
-                        right: 20,
-                        bottom: 40, // bagian pink yang tertutup card omzet
-                        child: Center(
-                          child: Row(
-                            children: [
-                              Obx(() => _brutalAvatar(
-                                    controller.ownerPhotoUrl.value.isEmpty
-                                        ? null
-                                        : controller.ownerPhotoUrl.value,
-                                    controller.userName.value,
-                                    20,
-                                    bgColor: AppColors.appWhite,
-                                    textColor: AppColors.primary,
-                                  )),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Obx(() => Text(
-                                        controller.greeting.value.toUpperCase(),
-                                        style: AppTextStyles.labelUpper
-                                            .copyWith(
-                                                color: Colors.white70,
-                                                fontSize: 9,
-                                                height: 1.2))),
-                                    const SizedBox(height: 2),
-                                    Obx(() => Text(controller.userName.value,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.outfit(
-                                            color: Colors.white,
-                                            fontSize: 18,
-                                            height: 1.1,
-                                            fontWeight: FontWeight.w900,
-                                            shadows: const [
-                                              Shadow(
-                                                  color: AppColors.ink,
-                                                  offset: Offset(2, 2))
-                                            ]))),
-                                  ],
-                                ),
-                              ),
-                              // ✅ Bell dalam Row yang sama → sejajar & center
-                              GestureDetector(
-                                onTap: () => AppDialogs.showCustomSnackbar(
-                                  title: 'Notifikasi',
-                                  message: 'Belum ada notifikasi baru.',
-                                  type: SnackbarType.info,
-                                ),
-                                child: Container(
-                                  width: 42,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.appWhite,
-                                    shape: BoxShape.circle,
-                                    border: appBorder(),
-                                    boxShadow: AppShadows.hard(3),
-                                  ),
-                                  child: const Icon(Icons.notifications_rounded,
-                                      color: AppColors.ink, size: 18),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+      body: Stack(
+        children: [
+          // ============================================
+          // 1. HEADER PINK FIXED
+          // ============================================
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: topPad + 130,
+            child: Container(
+              color: AppColors.primary,
+              padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: topPad + 18, // ✅ Jarak dari status bar
+                  bottom: 60 // ✅ Jarak ke card omzet (seimbang)
                   ),
-                ),
-                // --- Card omzet: separuh pink, separuh cream ---
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20, topPad + 86, 20, 0),
-                  child: Obx(() => controller.isLoadingOmzet.value
-                      ? _omzetSkeleton()
-                      : _omzetCard()),
-                ),
-              ],
-            ),
-            const SizedBox(height: 18),
-
-            // ============================================
-            // 2. KONTEN CREAM
-            // ============================================
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: Row(
                 children: [
-                  // --- QUICK MENU 4 TILE ---
-                  Row(
-                    children: [
-                      Expanded(
-                          child: _quickTile(Icons.add_rounded, 'MENU',
-                              AppColors.primary, Colors.white,
-                              onTap: () => Get.toNamed(Routes.menu))),
-                      const SizedBox(width: 10),
-                      Expanded(
-                          child: _quickTile(
-                              Icons.local_shipping_rounded,
-                              'DISTRIBUSI',
-                              AppColors.appWhite,
-                              AppColors.primary,
-                              onTap: () => Get.toNamed(Routes.distribusi))),
-                      const SizedBox(width: 10),
-                      Expanded(
-                          child: _quickTile(
-                              Icons.account_balance_wallet_rounded,
-                              'KEUANGAN',
-                              _yellowTile,
-                              AppColors.ink,
-                              onTap: _segeraHadir)),
-                      const SizedBox(width: 10),
-                      Expanded(
-                          child: _quickTile(Icons.verified_user_rounded,
-                              'AUDIT', _green, Colors.white,
-                              onTap: _segeraHadir)),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // --- STOK KRITIS ---
-                  _sectionTitle(
-                    'Stok Kritis',
-                    right: GestureDetector(
-                      onTap: () {},
-                      child: Text('LIHAT SEMUA',
-                          style: GoogleFonts.inter(
-                              color: AppColors.primary,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800)),
+                  Obx(() => _brutalAvatar(
+                        controller.ownerPhotoUrl.value.isEmpty
+                            ? null
+                            : controller.ownerPhotoUrl.value,
+                        controller.userName.value,
+                        20,
+                        bgColor: AppColors.appWhite,
+                        textColor: AppColors.primary,
+                      )),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment
+                          .center, // ✅ Teks block center vertikal
+                      children: [
+                        Obx(() => Text(
+                              controller.greeting.value.toUpperCase(),
+                              style: GoogleFonts.inter(
+                                  color: Colors.white.withOpacity(0.85),
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.2,
+                                  height: 1.1),
+                            )),
+                        const SizedBox(height: 2),
+                        Obx(() => Text(
+                              controller.userName.value,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1.1,
+                                  shadows: const [
+                                    Shadow(
+                                        color: AppColors.ink,
+                                        offset: Offset(2, 2))
+                                  ]),
+                            )),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Obx(() {
-                    if (controller.isLoadingStok.value) {
-                      return SizedBox(
-                        height: 150,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: 3,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(width: 12),
-                          itemBuilder: (_, __) => BrutalCard(
-                            padding: const EdgeInsets.all(12),
-                            child: Shimmer.fromColors(
-                              baseColor: Colors.grey[300]!,
-                              highlightColor: Colors.grey[100]!,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                      width: 90,
-                                      height: 12,
-                                      color: Colors.white),
-                                  const SizedBox(height: 8),
-                                  Container(
-                                      width: 120,
-                                      height: 14,
-                                      color: Colors.white),
-                                  const Spacer(),
-                                  Container(
-                                      width: 70,
-                                      height: 20,
-                                      color: Colors.white),
-                                ],
-                              ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => Get.toNamed(Routes.notifikasi),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppColors.appWhite,
+                            shape: BoxShape.circle,
+                            border: appBorder(),
+                            boxShadow: AppShadows.hard(2),
+                          ),
+                          child: const Icon(Icons.notifications_rounded,
+                              color: AppColors.ink, size: 18),
+                        ),
+                        Positioned(
+                          top: -2,
+                          right: -2,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
                             ),
                           ),
                         ),
-                      );
-                    }
-                    return SizedBox(
-                      height: 150,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: controller.stokKritis.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 12),
-                        itemBuilder: (_, i) =>
-                            _stockCard(controller.stokKritis[i]),
-                      ),
-                    );
-                  }),
-                  const SizedBox(height: 24),
-
-                  // --- STATUS KARYAWAN ---
-                  _sectionTitle('Status Karyawan'),
-                  const SizedBox(height: 12),
-                  Obx(() {
-                    if (controller.isLoadingKaryawan.value) {
-                      return Column(
-                        children: List.generate(
-                          3,
-                          (_) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: BrutalCard(
-                              padding: const EdgeInsets.all(12),
-                              child: Shimmer.fromColors(
-                                baseColor: Colors.grey[300]!,
-                                highlightColor: Colors.grey[100]!,
-                                child: Row(
-                                  children: [
-                                    Container(
-                                        width: 40,
-                                        height: 40,
-                                        decoration: const BoxDecoration(
-                                            color: Colors.white,
-                                            shape: BoxShape.circle)),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                        child: Container(
-                                            height: 30, color: Colors.white)),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                    return Column(
-                      children: List.generate(
-                        controller.karyawanList.length,
-                        (i) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _employeeCard(controller.karyawanList[i]),
-                        ),
-                      ),
-                    );
-                  }),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+
+          // ============================================
+          // 2. CONTENT: omzet + quick FIXED,
+          //    scroll region DITUTUP quick buttons di atas
+          // ============================================
+          Positioned(
+            top: topPad + 78,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Column(
+              children: [
+                // --- Zona FIXED (tidak ikut scroll) ---
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  child: Column(
+                    children: [
+                      Obx(() => controller.isLoadingOmzet.value
+                          ? _omzetSkeleton()
+                          : _omzetCard()),
+                      const SizedBox(height: 18),
+                      _quickActions(),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // --- Zona SCROLL (stok + karyawan) ---
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                    child: _noScrollbar(
+                      SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.only(bottom: 44),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _sectionTitle(
+                              'Stok Kritis',
+                              right: GestureDetector(
+                                onTap: () => Get.toNamed(Routes.stokKritis),
+                                child: Text('LIHAT SEMUA',
+                                    style: GoogleFonts.inter(
+                                        color: AppColors.primary,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.5)),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _stokSection(),
+                            const SizedBox(height: 22),
+                            _sectionTitle(
+                              'Status Karyawan',
+                              right: GestureDetector(
+                                onTap: () => Get.toNamed(Routes.pengguna),
+                                child: Text('LIHAT SEMUA',
+                                    style: GoogleFonts.inter(
+                                        color: AppColors.primary,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.5)),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _karyawanSection(),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  void _segeraHadir() => AppDialogs.showCustomSnackbar(
-        title: 'Segera Hadir',
-        message: 'Halaman ini sedang dalam pengembangan.',
-        type: SnackbarType.info,
+  // ✅ Matikan scrollbar (khusus web) tanpa mematikan gesture scroll
+  Widget _noScrollbar(Widget child) => ScrollConfiguration(
+        behavior:
+            ScrollConfiguration.of(Get.context!).copyWith(scrollbars: false),
+        child: child,
       );
 
   // ==========================================
-  // CARD OMZET (brutal + divider putus-putus)
+  // PILL SEDERHANA
+  // ==========================================
+  Widget _simplePill(String text, Color color, {bool withDot = false}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (withDot) ...[
+            Container(
+                width: 5,
+                height: 5,
+                decoration:
+                    BoxDecoration(color: color, shape: BoxShape.circle)),
+            const SizedBox(width: 5),
+          ],
+          Text(text,
+              style: GoogleFonts.inter(
+                  color: color,
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.4)),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================
+  // CARD OMZET
   // ==========================================
   Widget _omzetCard() {
-    return BrutalCard(
+    return Container(
       padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.appWhite,
+        borderRadius: BorderRadius.circular(18),
+        border: appBorder(),
+        boxShadow: AppShadows.hard(4),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('OMZET HARI INI',
-                  style: AppTextStyles.labelUpper.copyWith(fontSize: 9)),
-              _chip('LIVE', _green),
+                  style: GoogleFonts.inter(
+                      color: AppColors.muted,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1)),
+              const Spacer(),
+              _simplePill('LIVE', _green, withDot: true),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Obx(() => Text(controller.omzetHariIni.value,
               style: GoogleFonts.outfit(
                   fontSize: 30,
                   fontWeight: FontWeight.w900,
-                  color: AppColors.ink))),
-          const SizedBox(height: 10),
+                  color: AppColors.ink,
+                  height: 1.0))),
+          const SizedBox(height: 12),
           const _DashedLine(),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Row(
             children: [
               Container(
-                width: 36,
-                height: 36,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
                   color: _green,
                   borderRadius: BorderRadius.circular(10),
@@ -344,11 +316,15 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Estimasi Laba',
-                        style: AppTextStyles.bodySmall.copyWith(fontSize: 10)),
+                        style: GoogleFonts.inter(
+                            color: AppColors.muted,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 2),
                     Obx(() => Text(controller.estimasiLaba.value,
                         style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
                             color: AppColors.ink))),
                   ],
                 ),
@@ -356,26 +332,34 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Obx(() => _chip(controller.persentaseKenaikan.value, _green)),
+                  Obx(() =>
+                      _simplePill(controller.persentaseKenaikan.value, _green)),
                   const SizedBox(height: 4),
                   Obx(() => Text('${controller.totalTransaksi.value} Transaksi',
-                      style: AppTextStyles.bodySmall.copyWith(fontSize: 9))),
+                      style: GoogleFonts.inter(
+                          color: AppColors.muted,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700))),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          const _DashedLine(),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
+          Container(height: 1, color: AppColors.ink.withOpacity(0.12)),
+          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('PENGELUARAN HARI INI',
-                  style: AppTextStyles.labelUpper.copyWith(fontSize: 9)),
+                  style: GoogleFonts.inter(
+                      color: AppColors.muted,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1)),
               Obx(() => Text(controller.pengeluaranHariIni.value,
                   style: GoogleFonts.inter(
                       fontSize: 14,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w900,
                       color: AppColors.ink))),
             ],
           ),
@@ -385,20 +369,25 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
   }
 
   Widget _omzetSkeleton() {
-    return BrutalCard(
+    return Container(
       padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.appWhite,
+        borderRadius: BorderRadius.circular(18),
+        border: appBorder(),
+      ),
       child: Shimmer.fromColors(
         baseColor: Colors.grey[300]!,
         highlightColor: Colors.grey[100]!,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(width: 100, height: 12, color: Colors.white),
-            const SizedBox(height: 8),
-            Container(width: 180, height: 28, color: Colors.white),
-            const SizedBox(height: 12),
-            Container(width: double.infinity, height: 40, color: Colors.white),
-            const SizedBox(height: 12),
+            Container(width: 100, height: 10, color: Colors.white),
+            const SizedBox(height: 10),
+            Container(width: 200, height: 28, color: Colors.white),
+            const SizedBox(height: 14),
+            Container(width: double.infinity, height: 44, color: Colors.white),
+            const SizedBox(height: 14),
             Container(width: 140, height: 12, color: Colors.white),
           ],
         ),
@@ -407,30 +396,56 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
   }
 
   // ==========================================
-  // QUICK TILE
+  // QUICK ACTIONS
   // ==========================================
-  Widget _quickTile(IconData icon, String label, Color bg, Color fg,
-      {VoidCallback? onTap}) {
+  Widget _quickActions() {
+    return Row(
+      children: [
+        Expanded(
+            child: _quickTile(Icons.add_rounded, 'MENU', AppColors.primary,
+                Colors.white, () => Get.toNamed(Routes.menu))),
+        const SizedBox(width: 10),
+        Expanded(
+            child: _quickTile(
+                Icons.local_shipping_rounded,
+                'DISTRIBUSI',
+                AppColors.appWhite,
+                AppColors.ink,
+                () => Get.toNamed(Routes.distribusi))),
+        const SizedBox(width: 10),
+        Expanded(
+            child: _quickTile(Icons.account_balance_wallet_rounded, 'KEUANGAN',
+                _orange, AppColors.ink, _segeraHadir)),
+        const SizedBox(width: 10),
+        Expanded(
+            child: _quickTile(Icons.verified_user_rounded, 'AUDIT', _green,
+                Colors.white, _segeraHadir)),
+      ],
+    );
+  }
+
+  Widget _quickTile(
+      IconData icon, String label, Color bg, Color fg, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         height: 74,
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           border: appBorder(),
           boxShadow: AppShadows.hard(3),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: fg, size: 22),
-            const SizedBox(height: 4),
+            Icon(icon, color: fg, size: 20),
+            const SizedBox(height: 6),
             Text(label,
                 style: GoogleFonts.inter(
                     color: fg,
-                    fontSize: 8,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w900,
                     letterSpacing: 0.5)),
           ],
         ),
@@ -439,43 +454,98 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
   }
 
   // ==========================================
-  // JUDUL SECTION + SQUIGGLE
+  // SECTION TITLE
   // ==========================================
   Widget _sectionTitle(String title, {Widget? right}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(title,
-                style: GoogleFonts.outfit(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.ink)),
-            if (right != null) right,
-          ],
-        ),
-        const SizedBox(height: 2),
-        const BrutalSquiggle(width: 70, height: 8),
+        Text(title,
+            style: GoogleFonts.outfit(
+                color: AppColors.ink,
+                fontSize: 17,
+                fontWeight: FontWeight.w900)),
+        const Spacer(),
+        if (right != null) right,
       ],
     );
   }
 
   // ==========================================
-  // CARD STOK KRITIS
+  // STOK KRITIS (horizontal scroll)
   // ==========================================
+  Widget _stokSection() {
+    return Obx(() {
+      if (controller.isLoadingStok.value) {
+        return SizedBox(
+          height: 180,
+          child: _noScrollbar(ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(0, 6, 24, 6),
+            itemCount: 2,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (_, __) => Container(
+              width: 186,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.appWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: appBorder(),
+              ),
+              child: Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(width: 90, height: 10, color: Colors.white),
+                    const SizedBox(height: 8),
+                    Container(width: 120, height: 14, color: Colors.white),
+                    const SizedBox(height: 4),
+                    Container(width: 100, height: 10, color: Colors.white),
+                    const Spacer(),
+                    Container(
+                        width: double.infinity,
+                        height: 30,
+                        color: Colors.white),
+                  ],
+                ),
+              ),
+            ),
+          )),
+        );
+      }
+      return SizedBox(
+        height: 180,
+        child: _noScrollbar(ListView.separated(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          // ✅ padding vertical 6 = ruang untuk shadow/border bawah
+          // ✅ padding right 24 = shadow card terakhir tidak terpotong
+          padding: const EdgeInsets.fromLTRB(0, 6, 24, 6),
+          itemCount: controller.stokKritis.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 12),
+          itemBuilder: (_, i) => _stockCard(controller.stokKritis[i]),
+        )),
+      );
+    });
+  }
+
   Widget _stockCard(Map item) {
-    final status = (item['status'] as String?) ?? 'Unknown';
-    final color = status == 'Habis' ? AppColors.primary : _orange;
+    final kategori = (item['kategori'] as String?) ?? '';
+    final status = (item['status'] as String?) ?? 'Habis';
+    final isHabis = status.toLowerCase() == 'habis';
+    final tileBg = _katBg[kategori] ?? AppColors.muted;
+    final tileFg = tileBg == _orange ? AppColors.ink : Colors.white;
+
     return Container(
-      width: 190,
+      width: 186,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.appWhite,
         borderRadius: BorderRadius.circular(16),
         border: appBorder(),
-        boxShadow: AppShadows.hard(4),
+        boxShadow: AppShadows.hard(3),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,101 +556,199 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(10),
+                  color: tileBg,
+                  borderRadius: BorderRadius.circular(9),
                   border: appBorder(1.5),
                 ),
-                child: const Icon(Icons.inventory_2_rounded,
-                    color: AppColors.primary, size: 16),
+                child: Icon(
+                    kategori == 'Dairy'
+                        ? Icons.inventory_2_rounded
+                        : Icons.coffee_rounded,
+                    color: tileFg,
+                    size: 16),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(((item['kategori'] as String?) ?? '').toUpperCase(),
-                    maxLines: 2,
-                    style: AppTextStyles.bodySmall.copyWith(
+              const Spacer(),
+              Flexible(
+                child: Text(kategori.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        color: AppColors.muted,
                         fontSize: 8,
-                        letterSpacing: 0.8,
-                        fontWeight: FontWeight.w700)),
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.8)),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Text((item['nama'] as String?) ?? '',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.ink)),
+                  color: AppColors.ink,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900)),
           const SizedBox(height: 2),
           Text((item['stok'] as String?) ?? '',
-              style: AppTextStyles.bodySmall.copyWith(fontSize: 10)),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                  color: AppColors.muted,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600)),
           const Spacer(),
-          _chip(status.toUpperCase(), color),
+          // ✅ foregroundPainter → garis DIGAMBAR DI ATAS warna solid (terlihat)
+          // ✅ Putih di kedua shape, inset 5px dari border hitam
+          CustomPaint(
+            foregroundPainter:
+                _DashedRRectPainter(Colors.white.withOpacity(0.95), 6.5, 6),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: isHabis ? _redSolid : _orange,
+                borderRadius: BorderRadius.circular(10),
+                border: appBorder(1.5),
+              ),
+              child: Center(
+                child: Text(status.toUpperCase(),
+                    style: GoogleFonts.inter(
+                        color: isHabis ? Colors.white : AppColors.ink,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8)),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
   // ==========================================
-  // CARD STATUS KARYAWAN
+  // STATUS KARYAWAN (dirender penuh — ikut scroll halaman)
   // ==========================================
-  Widget _employeeCard(Map item) {
-    final status = (item['status'] as String?) ?? 'Unknown';
-    final isCheckIn = status.contains('Sudah');
-    final color = isCheckIn ? _green : _orange;
+  Widget _karyawanSection() {
+    return Obx(() {
+      if (controller.isLoadingKaryawan.value) {
+        return Column(
+          children: List.generate(
+            3,
+            (i) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.appWhite,
+                  borderRadius: BorderRadius.circular(14),
+                  border: appBorder(),
+                ),
+                child: Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Row(
+                    children: [
+                      Container(
+                          width: 44,
+                          height: 44,
+                          decoration: const BoxDecoration(
+                              color: Colors.white, shape: BoxShape.circle)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: Container(height: 30, color: Colors.white)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+
+      final all = controller.karyawanList;
+      final list = all.take(10).toList(); // ✅ batas 10 card
+
+      return Column(
+        children: [
+          ...List.generate(
+            list.length,
+            (i) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _employeeCard(list[i], i),
+            ),
+          ),
+          if (all.length > 10)
+            GestureDetector(
+              onTap: () => Get.toNamed(Routes.pengguna),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.appWhite,
+                  borderRadius: BorderRadius.circular(14),
+                  border: appBorder(1.5),
+                ),
+                child: Center(
+                  child: Text('Lihat ${all.length - 10} karyawan lainnya →',
+                      style: GoogleFonts.inter(
+                          color: AppColors.primary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900)),
+                ),
+              ),
+            ),
+        ],
+      );
+    });
+  }
+
+  Widget _employeeCard(Map item, int index) {
+    final status = (item['status'] as String?) ?? '';
+    final isCheckIn = status.toLowerCase().contains('sudah');
+    final statusColor = isCheckIn ? _green : _orange;
+    final avatarColor = _avatarPalette[index % _avatarPalette.length];
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.appWhite,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: appBorder(),
-        boxShadow: AppShadows.hard(4),
+        boxShadow: AppShadows.hard(2),
       ),
       child: Row(
         children: [
           _brutalAvatar(
-              item['fotoUrl'] as String?, (item['nama'] ?? 'U').toString(), 20,
-              bgColor: color.withOpacity(0.15), textColor: color),
-          const SizedBox(width: 10),
+              item['fotoUrl'] as String?, (item['nama'] ?? 'U').toString(), 22,
+              bgColor: avatarColor, textColor: Colors.white),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text((item['nama'] ?? '').toString(),
                     style: GoogleFonts.inter(
+                        color: AppColors.ink,
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.ink)),
+                        fontWeight: FontWeight.w900)),
                 const SizedBox(height: 2),
                 Text((item['info'] ?? '').toString(),
-                    style: AppTextStyles.bodySmall.copyWith(fontSize: 10)),
+                    style: GoogleFonts.inter(
+                        color: AppColors.muted,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600)),
               ],
             ),
           ),
-          _chip(status.toUpperCase(), color),
+          const SizedBox(width: 8),
+          _simplePill(status.toUpperCase(), statusColor),
         ],
       ),
     );
   }
 
   // ==========================================
-  // CHIP STATUS (tint + border warna)
-  // ==========================================
-  Widget _chip(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color, width: 1.5),
-      ),
-      child: Text(text,
-          style: GoogleFonts.inter(
-              color: color, fontSize: 9, fontWeight: FontWeight.w800)),
-    );
-  }
-
-  // ==========================================
-  // AVATAR BRUTAL (border hitam + fallback huruf)
+  // AVATAR BRUTAL
   // ==========================================
   Widget _brutalAvatar(String? imageUrl, String name, double radius,
       {Color? bgColor, Color? textColor}) {
@@ -595,11 +763,8 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
     return Container(
       width: radius * 2,
       height: radius * 2,
-      decoration: BoxDecoration(
-        color: bg,
-        shape: BoxShape.circle,
-        border: appBorder(),
-      ),
+      decoration:
+          BoxDecoration(color: bg, shape: BoxShape.circle, border: appBorder()),
       child: ClipOval(
         child: (imageUrl == null || imageUrl.isEmpty)
             ? fallback
@@ -612,10 +777,16 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
       ),
     );
   }
+
+  void _segeraHadir() => AppDialogs.showCustomSnackbar(
+        title: 'Segera Hadir',
+        message: 'Halaman ini sedang dalam pengembangan.',
+        type: SnackbarType.info,
+      );
 }
 
 // ====================================================
-// DIVIDER PUTUS-PUTUS
+// DIVIDER PUTUS-PUTUS HORIZONTAL
 // ====================================================
 class _DashedLine extends StatelessWidget {
   const _DashedLine();
@@ -626,7 +797,7 @@ class _DashedLine extends StatelessWidget {
       width: double.infinity,
       height: 2,
       child: CustomPaint(
-        painter: _DashedLinePainter(AppColors.muted.withOpacity(0.5)),
+        painter: _DashedLinePainter(AppColors.muted.withOpacity(0.4)),
       ),
     );
   }
@@ -655,24 +826,34 @@ class _DashedLinePainter extends CustomPainter {
 }
 
 // ====================================================
-// DOT GRID FULL BACKGROUND (header pink)
+// DASHED ROUNDED-RECT (inner border tombol status)
 // ====================================================
-class _DotGridPainter extends CustomPainter {
-  const _DotGridPainter();
+class _DashedRRectPainter extends CustomPainter {
+  final Color color;
+  final double radius;
+  final double inset;
 
-  // ✅ Konstanta internal (tidak perlu parameter karena tidak pernah diubah)
-  static const Color _color = Colors.white;
-  static const double _spacing = 18;
-  static const double _radius = 1.8;
+  _DashedRRectPainter(this.color, this.radius, this.inset);
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = _color.withOpacity(0.25)
-      ..style = PaintingStyle.fill;
-    for (double y = _spacing / 2; y < size.height; y += _spacing) {
-      for (double x = _spacing / 2; x < size.width; x += _spacing) {
-        canvas.drawCircle(Offset(x, y), _radius, paint);
+      ..color = color
+      ..strokeWidth = 1.3
+      ..style = PaintingStyle.stroke;
+    final rect = Rect.fromLTWH(
+        inset, inset, size.width - inset * 2, size.height - inset * 2);
+    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(radius));
+    final path = Path()..addRRect(rrect);
+    for (final metric in path.computeMetrics()) {
+      double distance = 0;
+      while (distance < metric.length) {
+        final end = distance + 5;
+        canvas.drawPath(
+            metric.extractPath(
+                distance, end > metric.length ? metric.length : end),
+            paint);
+        distance = end + 4;
       }
     }
   }

@@ -7,9 +7,7 @@ import '../../../../core/widgets/brutal_kit.dart';
 import '../controllers/tambah_barang_controller.dart';
 
 class TambahBarangView extends GetView<TambahBarangController> {
-  TambahBarangView({super.key});
-
-  final PageController _pageController = PageController();
+  const TambahBarangView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -45,60 +43,54 @@ class TambahBarangView extends GetView<TambahBarangController> {
     final topPad = MediaQuery.of(context).padding.top;
     return Container(
       color: AppColors.primary,
-      padding: EdgeInsets.fromLTRB(20, topPad + 14, 20, 50),
-      child: Stack(
+      padding: EdgeInsets.fromLTRB(20, topPad + 14, 20, 42),
+      child: Row(
         children: [
-          const Positioned(
-            top: -8,
-            right: 0,
-            child: BrutalDots(cols: 4, rows: 3),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              if (Get.key.currentState?.canPop() ?? false) {
+                Get.back();
+              } else if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                Get.back();
+              }
+            },
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.appWhite,
+                shape: BoxShape.circle,
+                border: appBorder(),
+                boxShadow: AppShadows.hard(2),
+              ),
+              child: const Icon(Icons.arrow_back_rounded,
+                  color: AppColors.ink, size: 20),
+            ),
           ),
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => Get.back(),
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppColors.appWhite,
-                    shape: BoxShape.circle,
-                    border: appBorder(),
-                    boxShadow: AppShadows.hard(2),
-                  ),
-                  child: const Icon(Icons.arrow_back_rounded,
-                      color: AppColors.ink, size: 20),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Tambah Barang',
-                        style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            shadows: const [
-                              Shadow(color: Colors.black, offset: Offset(2, 2))
-                            ])),
-                    const SizedBox(height: 2),
-                    Text('Barang operasional & stok',
-                        style: GoogleFonts.inter(
-                            color: Colors.white70,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ),
-              const BrutalIcon(
-                icon: Icons.star_rounded,
-                color: AppColors.yellow,
-                size: 36,
-                outlineWidth: 3.5,
-              ),
-            ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Barang Operasional',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        shadows: const [
+                          Shadow(color: Colors.black, offset: Offset(2, 2))
+                        ])),
+                const SizedBox(height: 2),
+                Text('Kelola barang operasional & stok',
+                    style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600)),
+              ],
+            ),
           ),
         ],
       ),
@@ -106,21 +98,24 @@ class TambahBarangView extends GetView<TambahBarangController> {
   }
 
   Widget _buildTabs() {
-    return Container(
-      width: 300,
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: AppColors.appWhite,
-        borderRadius: BorderRadius.circular(50),
-        border: appBorder(),
-        boxShadow: AppShadows.hard(3),
-      ),
-      child: Row(
-        children: [
-          SizedBox(width: 140, child: _tabButton(0, 'TAMBAH BARANG')),
-          const SizedBox(width: 4),
-          SizedBox(width: 140, child: _tabButton(1, 'DAFTAR BARANG')),
-        ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: AppColors.appWhite,
+          borderRadius: BorderRadius.circular(50),
+          border: appBorder(),
+          boxShadow: AppShadows.hard(3),
+        ),
+        child: Row(
+          children: [
+            Expanded(child: _tabButton(0, 'TAMBAH BARANG')),
+            const SizedBox(width: 6),
+            Expanded(child: _tabButton(1, 'DAFTAR BARANG')),
+          ],
+        ),
       ),
     );
   }
@@ -131,22 +126,25 @@ class TambahBarangView extends GetView<TambahBarangController> {
       return GestureDetector(
         onTap: () {
           controller.selectedTabIndex.value = index;
-          controller.pageController.jumpToPage(index); // ✅ Ganti di sini
+          controller.pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+          );
         },
         child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          height: 50,
           decoration: BoxDecoration(
             color: active ? AppColors.primary : AppColors.appWhite,
             borderRadius: BorderRadius.circular(50),
             border: Border.all(
-                color: active ? AppColors.ink : Colors.transparent, width: 1.5),
+                color: active ? AppColors.ink : Colors.transparent, width: 2),
           ),
           child: Center(
             child: Text(label,
                 style: GoogleFonts.inter(
                     color: active ? Colors.white : AppColors.primary,
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: FontWeight.w800)),
           ),
         ),
@@ -207,132 +205,6 @@ class TambahBarangView extends GetView<TambahBarangController> {
           ),
           const SizedBox(height: 20),
 
-          // 2. PILIH KATEGORI BARANG (Card + Pill Buttons)
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.appWhite,
-              borderRadius: BorderRadius.circular(14),
-              border: appBorder(),
-              boxShadow: AppShadows.hard(2),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header dengan garis bawah kuning
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text('PILIH KATEGORI BARANG',
-                            style: GoogleFonts.inter(
-                                color: AppColors.ink,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800)),
-                        const Spacer(),
-                        Text('WAJIB',
-                            style: GoogleFonts.inter(
-                                color: AppColors.muted,
-                                fontSize: 9,
-                                fontWeight: FontWeight.w700)),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      width: 40,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: AppColors.yellow,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                // Kategori Buttons (PILL SHAPE - 2 kolom)
-                Obx(() => Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: controller.kategoriList.map((kat) {
-                        final isSelected =
-                            controller.selectedKategori.value == kat['nama'];
-                        return GestureDetector(
-                          onTap: () => controller.selectKategori(kat['nama']),
-                          child: Container(
-                            height: 42,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? kat['color']
-                                  : AppColors.appWhite,
-                              borderRadius: BorderRadius.circular(50),
-                              border: appBorder(1.5),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(kat['icon'] as IconData,
-                                    color: AppColors.ink, size: 16),
-                                const SizedBox(width: 6),
-                                Text(kat['nama'] as String,
-                                    style: GoogleFonts.inter(
-                                        color: AppColors.ink,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w700)),
-                                if (isSelected) ...[
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    width: 18,
-                                    height: 18,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.brandGreen,
-                                      shape: BoxShape.circle,
-                                      border: appBorder(1),
-                                    ),
-                                    child: const Icon(Icons.check_rounded,
-                                        color: Colors.white, size: 12),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    )),
-                const SizedBox(height: 10),
-                // Tombol + Kategori Lain (PILL DASHED)
-                GestureDetector(
-                  onTap: () {},
-                  child: CustomPaint(
-                    painter: _DashedRRectPainter(AppColors.ink, 50),
-                    child: Container(
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: AppColors.appWhite,
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.add_rounded,
-                              color: AppColors.ink, size: 16),
-                          const SizedBox(width: 4),
-                          Text('+ Kategori Lain',
-                              style: GoogleFonts.inter(
-                                  color: AppColors.ink,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
           // 3. NAMA BARANG
           Text('NAMA BARANG',
               style: GoogleFonts.inter(
@@ -375,8 +247,7 @@ class TambahBarangView extends GetView<TambahBarangController> {
           ),
           const SizedBox(height: 20),
 
-// 4. PILIH SATUAN (Card + Layout Horizontal + Dashed Line)
-// 4. PILIH SATUAN (Card + Layout Horizontal + Efek Timbul)
+          // 4. PILIH SATUAN (MENGIKUTI KATEGORI)
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -388,219 +259,194 @@ class TambahBarangView extends GetView<TambahBarangController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header dengan garis bawah kuning
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // Header (tanpa garis kuning)
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Text('PILIH SATUAN (MENGIKUTI KATEGORI)',
-                            style: GoogleFonts.inter(
-                                color: AppColors.ink,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800)),
-                        const Spacer(),
-                        Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            color: AppColors.appWhite,
-                            shape: BoxShape.circle,
-                            border: appBorder(1.5),
-                          ),
-                          child: const Icon(Icons.info_outline_rounded,
-                              color: AppColors.ink, size: 12),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
+                    Text('PILIH SATUAN (MENGIKUTI KATEGORI)',
+                        style: GoogleFonts.inter(
+                            color: AppColors.ink,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800)),
+                    const Spacer(),
                     Container(
-                      width: 40,
-                      height: 3,
+                      width: 20,
+                      height: 20,
                       decoration: BoxDecoration(
-                        color: AppColors.yellow,
-                        borderRadius: BorderRadius.circular(2),
+                        color: AppColors.appWhite,
+                        shape: BoxShape.circle,
+                        border: appBorder(1.5),
                       ),
+                      child: const Icon(Icons.info_outline_rounded,
+                          color: AppColors.ink, size: 12),
                     ),
                   ],
                 ),
                 const SizedBox(height: 14),
-                // Daftar Satuan per Kategori (Horizontal Layout)
-// Daftar Satuan per Kategori (Horizontal Layout)
-                Obx(() => Column(
-                      children: controller.kategoriList.map((kat) {
-                        final satuanList =
-                            controller.satuanPerKategori[kat['nama']] ?? [];
-                        final isKategoriActive =
-                            controller.selectedKategori.value == kat['nama'];
+                // Daftar Satuan per Kategori - setiap baris Obx TERPISAH (Aman dari error GetX)
+                ...controller.kategoriList.map((kat) {
+                  return Obx(() {
+                    // ✅ Baca SEMUA .value di awal Obx (pola aman GetX)
+                    final selectedKategori = controller.selectedKategori.value;
+                    final selectedSatuan = controller.selectedSatuan.value;
+                    final isKategoriActive = selectedKategori == kat['nama'];
+                    final satuanList =
+                        controller.satuanPerKategori[kat['nama']] ?? [];
 
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // ✅ SATU CONTAINER UTUH untuk Label + Units
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: kat['color'],
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                    color: AppColors.ink,
-                                    width: isKategoriActive ? 2.5 : 1.5),
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: kat['color'],
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: AppColors.ink,
+                                width: isKategoriActive
+                                    ? 2.0
+                                    : 1.5), // ✅ Lebih tipis
+                            boxShadow: isKategoriActive
+                                ? AppShadows.hard(3)
+                                : [], // ✅ Menonjol saat aktif
+                          ),
+                          child: Row(
+                            children: [
+                              // Label Kategori
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.appWhite.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(kat['icon'] as IconData,
+                                        color: AppColors.ink, size: 14),
+                                    const SizedBox(width: 4),
+                                    Text(kat['nama'] as String,
+                                        style: GoogleFonts.inter(
+                                            color: AppColors.ink,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w700)),
+                                  ],
+                                ),
                               ),
-                              child: Row(
-                                children: [
-                                  // Label Kategori
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          AppColors.appWhite.withOpacity(0.3),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(kat['icon'] as IconData,
-                                            color: AppColors.ink, size: 14),
-                                        const SizedBox(width: 4),
-                                        Text(kat['nama'] as String,
-                                            style: GoogleFonts.inter(
-                                                color: AppColors.ink,
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.w700)),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  // Units (Horizontal Scroll)
-                                  Expanded(
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: Row(
-                                        children: satuanList.map((satuan) {
-                                          final isSelected =
-                                              controller.selectedSatuan.value ==
-                                                  satuan;
-                                          return Padding(
-                                            padding:
-                                                const EdgeInsets.only(right: 6),
-                                            child: GestureDetector(
-                                              onTap: () {
-                                                controller.selectKategori(
-                                                    kat['nama']);
-                                                controller.selectSatuan(satuan);
-                                              },
-                                              child: Container(
-                                                height: 28,
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 10),
-                                                decoration: BoxDecoration(
-                                                  color: isSelected
-                                                      ? AppColors.brandGreen
-                                                      : AppColors.appWhite,
-                                                  borderRadius:
-                                                      BorderRadius.circular(6),
-                                                  border: Border.all(
-                                                      color: AppColors.ink,
-                                                      width:
-                                                          isSelected ? 1.5 : 1),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Text(satuan,
-                                                        style: GoogleFonts.inter(
-                                                            color: isSelected
-                                                                ? Colors.white
-                                                                : AppColors.ink,
-                                                            fontSize: 9,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w700)),
-                                                    if (isSelected) ...[
-                                                      const SizedBox(width: 3),
-                                                      const Icon(
-                                                          Icons.check_rounded,
-                                                          color: Colors.white,
-                                                          size: 10),
-                                                    ],
-                                                  ],
-                                                ),
-                                              ),
+                              const SizedBox(width: 8),
+                              // Units (Horizontal Scroll)
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: satuanList.map((satuan) {
+                                      // ✅ Chips hanya aktif di kategori yang aktif
+                                      final isSelected = isKategoriActive &&
+                                          selectedSatuan == satuan;
+                                      return Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 6),
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            controller
+                                                .selectKategori(kat['nama']);
+                                            controller.selectSatuan(satuan);
+                                          },
+                                          child: Container(
+                                            height: 28,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10),
+                                            decoration: BoxDecoration(
+                                              color: isSelected
+                                                  ? AppColors.brandGreen
+                                                  : AppColors.appWhite,
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              border: Border.all(
+                                                  color: AppColors.ink,
+                                                  width: isSelected ? 1.5 : 1),
                                             ),
-                                          );
-                                        }).toList(),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            // Garis putus-putus pemisah
-                            SizedBox(
-                              height: 2,
-                              child: Row(
-                                children: List.generate(
-                                  40,
-                                  (i) => Expanded(
-                                    child: Container(
-                                      color: i % 2 == 0
-                                          ? AppColors.muted.withOpacity(0.4)
-                                          : Colors.transparent,
-                                      height: 2,
-                                    ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(satuan,
+                                                    style: GoogleFonts.inter(
+                                                        color: isSelected
+                                                            ? Colors.white
+                                                            : AppColors.ink,
+                                                        fontSize: 9,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                                if (isSelected) ...[
+                                                  const SizedBox(width: 3),
+                                                  const Icon(
+                                                      Icons.check_rounded,
+                                                      color: Colors.white,
+                                                      size: 10),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                          ],
-                        );
-                      }).toList(),
-                    )),
-                // Tombol + Kategori Lain (PILL DASHED)
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {},
-                        child: CustomPaint(
-                          painter: _DashedRRectPainter(AppColors.ink, 50),
-                          child: Container(
-                            height: 38,
-                            decoration: BoxDecoration(
-                              color: AppColors.appWhite,
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.add_rounded,
-                                    color: AppColors.ink, size: 14),
-                                const SizedBox(width: 4),
-                                Text('+ Kategori Lain',
-                                    style: GoogleFonts.inter(
-                                        color: AppColors.ink,
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w700)),
-                              ],
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // Garis putus-putus pemisah
+                        SizedBox(
+                          height: 2,
+                          child: Row(
+                            children: List.generate(
+                              40,
+                              (i) => Expanded(
+                                child: Container(
+                                  color: i % 2 == 0
+                                      ? AppColors.muted.withOpacity(0.4)
+                                      : Colors.transparent,
+                                  height: 2,
+                                ),
+                              ),
                             ),
                           ),
                         ),
+                        const SizedBox(height: 8),
+                      ],
+                    );
+                  });
+                }),
+                const SizedBox(height: 10),
+                // Tombol + Kategori Lain (PILL DASHED)
+                GestureDetector(
+                  onTap: () {},
+                  child: CustomPaint(
+                    painter: _DashedRRectPainter(AppColors.ink, 50),
+                    child: Container(
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: AppColors.appWhite,
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.add_rounded,
+                              color: AppColors.ink, size: 14),
+                          const SizedBox(width: 4),
+                          Text('+ Kategori Lain',
+                              style: GoogleFonts.inter(
+                                  color: AppColors.ink,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700)),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Text('(bebas pilih)',
-                        style: GoogleFonts.inter(
-                            color: AppColors.muted,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w600)),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -1050,6 +896,7 @@ class TambahBarangView extends GetView<TambahBarangController> {
                 ),
                 const SizedBox(height: 10),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Icon(Icons.check_circle_rounded,
                         color: AppColors.brandGreen, size: 14),
@@ -1069,16 +916,29 @@ class TambahBarangView extends GetView<TambahBarangController> {
           ),
           const SizedBox(height: 20),
 
-          // 8. AKTIF DIGUNAKAN
+          // 8. AKTIF DIGUNAKAN (Card TERPISAH)
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: AppColors.appWhite,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               border: appBorder(),
+              boxShadow: AppShadows.hard(3),
             ),
             child: Row(
               children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D7A4F),
+                    borderRadius: BorderRadius.circular(10),
+                    border: appBorder(1.5),
+                  ),
+                  child: const Icon(Icons.check_circle_rounded,
+                      color: Colors.white, size: 18),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1087,21 +947,52 @@ class TambahBarangView extends GetView<TambahBarangController> {
                           style: GoogleFonts.inter(
                               color: AppColors.ink,
                               fontSize: 11,
-                              fontWeight: FontWeight.w800)),
+                              fontWeight: FontWeight.w900)),
                       const SizedBox(height: 2),
                       Text('Barang akan muncul di pemantauan stok',
                           style: GoogleFonts.inter(
                               color: AppColors.muted,
-                              fontSize: 9,
+                              fontSize: 8,
                               fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ),
-                Obx(() => Switch(
-                      value: controller.aktifDigunakan.value,
-                      onChanged: (val) => controller.aktifDigunakan.value = val,
-                      activeColor: AppColors.brandGreen,
-                    )),
+                // Toggle brutal dengan border konsisten
+                Obx(() {
+                  final aktif = controller.aktifDigunakan.value;
+                  return GestureDetector(
+                    onTap: () => controller.toggleAktifDigunakan(),
+                    child: Container(
+                      width: 50,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: aktif
+                            ? const Color(0xFFE8F5E9)
+                            : AppColors.appWhite,
+                        borderRadius: BorderRadius.circular(14),
+                        border: appBorder(1.5), // Border KONSISTEN
+                      ),
+                      child: Stack(
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            margin: const EdgeInsets.all(2),
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color:
+                                  aktif ? const Color(0xFF2D7A4F) : Colors.grey,
+                              shape: BoxShape.circle,
+                              border: appBorder(1),
+                            ),
+                            transform:
+                                Matrix4.translationValues(aktif ? 20 : 0, 0, 0),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
               ],
             ),
           ),

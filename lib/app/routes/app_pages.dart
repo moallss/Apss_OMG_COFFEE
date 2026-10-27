@@ -35,6 +35,16 @@ import '../../features/owner/pengguna/views/pengguna_view.dart';
 import '../../features/owner/karyawan_pengelolaan/bindings/tambah_karyawan_binding.dart';
 import '../../features/owner/karyawan_pengelolaan/views/tambah_karyawan_view.dart';
 
+import '../../features/karyawan/profil_karyawan/bindings/profil_karyawan_binding.dart';
+import '../../features/karyawan/profil_karyawan/views/profil_karyawan_view.dart';
+import '../../features/owner/notifikasi/bindings/notifikasi_binding.dart';
+import '../../features/owner/notifikasi/views/notifikasi_view.dart';
+import '../../features/owner/stok_kritis/bindings/stok_kritis_binding.dart';
+import '../../features/owner/stok_kritis/views/stok_kritis_view.dart';
+// Tambahkan ini di bawah import 'stok_kritis_binding.dart' atau sejenisnya
+import '../../features/karyawan/stok/bindings/stok_binding.dart';
+import '../../features/karyawan/stok/views/stok_view.dart';
+
 part 'app_routes.dart';
 
 class AppPages {
@@ -118,6 +128,26 @@ class AppPages {
       name: _Paths.tambahKaryawan,
       page: () => const TambahKaryawanView(),
       binding: TambahKaryawanBinding(),
+    ),
+    GetPage(
+      name: _Paths.profilKaryawan,
+      page: () => const ProfilKaryawanView(),
+      binding: ProfilKaryawanBinding(),
+    ),
+    GetPage(
+      name: _Paths.notifikasi,
+      page: () => const NotifikasiView(),
+      binding: NotifikasiBinding(),
+    ),
+    GetPage(
+      name: _Paths.stokKritis,
+      page: () => const StokKritisView(),
+      binding: StokKritisBinding(),
+    ),
+    GetPage(
+      name: _Paths.stokKaryawan, // Nama path baru
+      page: () => const StokView(),
+      binding: StokBinding(),
     ),
   ];
 }

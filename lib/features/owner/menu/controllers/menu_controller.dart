@@ -1,3 +1,4 @@
+// PATH FILE: lib/features/owner/menu/controllers/menu_controller.dart
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -5,8 +6,8 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/utils/app_dialogs.dart';
+import '../../../../data/services/menu_service.dart';
 
-/// Hasil edit foto dari editor (dipakai callback onSave)
 class FotoEditResult {
   final double zoom;
   final int turns;
@@ -30,20 +31,24 @@ class FotoEditResult {
 }
 
 class MenuController extends GetxController {
+  final MenuService _menuService = MenuService();
+
   final selectedTabIndex = 0.obs;
   final PageController tabPageController = PageController();
 
-  // ==========================================
-  // FORM BUAT MENU
-  // ==========================================
+  final isLoading = false.obs;
+  final isSaving = false.obs;
+  final editingId = Rxn<String>();
+
   final namaController = TextEditingController();
   final hargaController = TextEditingController();
   final deskripsiController = TextEditingController();
   final kategori = ''.obs;
   final menuAktif = true.obs;
 
-  // FOTO (path + semua parameter edit)
   final fotoPath = Rxn<String>();
+  final fotoBytes =
+      Rxn<Uint8List>(); // ✅ BARU: bytes untuk preview (aman di web)
   final fotoZoom = 1.0.obs;
   final fotoTurns = 0.obs;
   final fotoOffset = Offset.zero.obs;
@@ -53,21 +58,243 @@ class MenuController extends GetxController {
   final fotoContrast = 1.0.obs;
   final fotoSaturation = 1.0.obs;
 
-  // ✅ BARU: filter untuk Lihat Menu
   final filterKategori = 'Semua'.obs;
   final filterStatus = 'Semua'.obs;
-
+  final searchQuery = ''.obs;
   final kategoriOptions = ['Kopi', 'Non-Kopi', 'Snack', 'Makanan'].obs;
+  final menuList = <Map<String, dynamic>>[].obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadMenu();
+  }
+
+  Future<void> loadMenu() async {
+    isLoading.value = true;
+    try {
+      final rows = await _menuService.fetchMenu();
+      menuList.assignAll(rows.map(_rowToItem).toList());
+    } catch (e) {
+      AppDialogs.showCustomSnackbar(
+        title: 'Gagal Memuat Menu',
+        message: 'Periksa koneksi/Supabase. Detail: $e',
+        type: SnackbarType.error,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Map<String, dynamic> _rowToItem(Map<String, dynamic> r) {
+    return {
+      'id': r['id'] as String,
+      'nama': (r['nama_menu'] as String?) ?? '-',
+      'kategori': (r['kategori'] as String?) ?? 'Kopi',
+      'harga': ((r['harga'] as num?) ?? 0).toInt(),
+      'deskripsi': (r['deskripsi'] as String?) ?? '-',
+      'aktif': (r['tersedia'] as bool?) ?? true,
+      'fotoPath': r['gambar_url'],
+      'fotoZoom': 1.0,
+      'fotoTurns': 0,
+      'fotoOffset': Offset.zero,
+      'fotoFlipH': false,
+      'fotoFlipV': false,
+      'fotoBrightness': 1.0,
+      'fotoContrast': 1.0,
+      'fotoSaturation': 1.0,
+    };
+  }
+
+  Future<void> simpanMenu() async {
+    if (isSaving.value) return;
+
+    if (namaController.text.trim().isEmpty) {
+      AppDialogs.showCustomSnackbar(
+        title: 'Validasi Gagal',
+        message: 'Nama menu wajib diisi.',
+        type: SnackbarType.warning,
+      );
+      return;
+    }
+
+    if (kategori.value.isEmpty) {
+      AppDialogs.showCustomSnackbar(
+        title: 'Validasi Gagal',
+        message: 'Silakan pilih kategori menu.',
+        type: SnackbarType.warning,
+      );
+      return;
+    }
+
+    if (hargaController.text.isEmpty) {
+      AppDialogs.showCustomSnackbar(
+        title: 'Validasi Gagal',
+        message: 'Harga jual dasar wajib diisi.',
+        type: SnackbarType.warning,
+      );
+      return;
+    }
+
+    final deskripsiClean = deskripsiController.text.trim();
+    final deskripsiFinal = deskripsiClean.isEmpty ? '-' : deskripsiClean;
+
+    final data = {
+      'nama_menu': namaController.text.trim(),
+      'kategori': kategori.value,
+      'harga': int.parse(hargaController.text.replaceAll('.', '')),
+      'deskripsi': deskripsiFinal,
+      'tersedia': menuAktif.value,
+      'gambar_url': null,
+    };
+
+    isSaving.value = true;
+    try {
+      final id = editingId.value;
+      if (id != null) {
+        await _menuService.updateMenu(id, data);
+        AppDialogs.showCustomSnackbar(
+          title: 'Menu Diperbarui',
+          message: '${data['nama_menu']} berhasil diubah.',
+          type: SnackbarType.success,
+        );
+      } else {
+        await _menuService.createMenu(data);
+        AppDialogs.showCustomSnackbar(
+          title: 'Menu Tersimpan',
+          message: '${data['nama_menu']} berhasil ditambahkan.',
+          type: SnackbarType.success,
+        );
+      }
+      _resetForm();
+      await loadMenu();
+      changeTab(1);
+    } catch (e) {
+      AppDialogs.showCustomSnackbar(
+        title: 'Gagal Menyimpan',
+        message: 'Detail: $e',
+        type: SnackbarType.error,
+      );
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
+  void startEdit(Map<String, dynamic> m) {
+    editingId.value = m['id'] as String?;
+    namaController.text = (m['nama'] as String?) ?? '';
+    hargaController.text = formatRupiah((m['harga'] as int?) ?? 0);
+
+    final desk = m['deskripsi'] as String? ?? '';
+    deskripsiController.text = (desk == '-') ? '' : desk;
+
+    kategori.value = (m['kategori'] as String?) ?? '';
+    menuAktif.value = (m['aktif'] as bool?) ?? true;
+    resetFoto();
+    changeTab(0);
+
+    AppDialogs.showCustomSnackbar(
+      title: 'Mode Edit',
+      message: 'Mengubah "${m['nama']}". Ubah form lalu tekan Update Menu.',
+      type: SnackbarType.info,
+    );
+  }
+
+  void cancelEdit() {
+    editingId.value = null;
+    _resetForm();
+  }
+
+  void _resetForm() {
+    namaController.clear();
+    hargaController.clear();
+    deskripsiController.clear();
+    kategori.value = '';
+    menuAktif.value = true;
+    editingId.value = null;
+    resetFoto();
+  }
+
+  void confirmDelete(Map<String, dynamic> m) {
+    final id = m['id'] as String?;
+    if (id == null) return;
+
+    AppDialogs.showConfirmDialog(
+      title: 'Hapus Menu',
+      message: '"${m['nama']}" akan dihapus permanen dari daftar menu.',
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      onConfirm: () async {
+        try {
+          await _menuService.deleteMenu(id);
+          AppDialogs.showCustomSnackbar(
+            title: 'Menu Dihapus',
+            message: '${m['nama']} telah dihapus.',
+            type: SnackbarType.success,
+          );
+          await loadMenu();
+        } catch (e) {
+          AppDialogs.showCustomSnackbar(
+            title: 'Gagal Menghapus',
+            message: 'Detail: $e',
+            type: SnackbarType.error,
+          );
+        }
+      },
+    );
+  }
+
+  Future<void> toggleAktifMenu(Map<String, dynamic> m) async {
+    final id = m['id'] as String?;
+    final old = m['aktif'] as bool;
+    m['aktif'] = !old;
+    menuList.refresh();
+
+    if (id == null) return;
+    try {
+      await _menuService.updateMenu(id, {'tersedia': m['aktif']});
+    } catch (e) {
+      m['aktif'] = old;
+      menuList.refresh();
+      AppDialogs.showCustomSnackbar(
+        title: 'Gagal Mengubah Status',
+        message: 'Detail: $e',
+        type: SnackbarType.error,
+      );
+    }
+  }
+
+  List<Map<String, dynamic>> get filteredMenu {
+    return menuList.where((m) {
+      final matchQuery = (m['nama'] as String)
+          .toLowerCase()
+          .contains(searchQuery.value.toLowerCase());
+      final matchKategori = filterKategori.value == 'Semua' ||
+          (m['kategori'] as String) == filterKategori.value;
+      final matchStatus = filterStatus.value == 'Semua' ||
+          (filterStatus.value == 'Aktif' && m['aktif'] == true) ||
+          (filterStatus.value == 'Nonaktif' && m['aktif'] == false);
+      return matchQuery && matchKategori && matchStatus;
+    }).toList();
+  }
+
+  void onSearchChanged(String v) => searchQuery.value = v;
+
+  bool get hasActiveFilter =>
+      filterKategori.value != 'Semua' || filterStatus.value != 'Semua';
+
+  String formatRupiah(int v) => v.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
 
   void selectKategori(String v) {
     kategori.value = v;
-    Get.back();
   }
 
   void toggleAktifForm(bool v) => menuAktif.value = v;
 
-  void setFoto(String path, FotoEditResult r) {
+  void setFoto(String path, Uint8List bytes, FotoEditResult r) {
     fotoPath.value = path;
+    fotoBytes.value = bytes; // ✅ simpan bytes
     fotoZoom.value = r.zoom;
     fotoTurns.value = r.turns;
     fotoOffset.value = r.offsetNorm;
@@ -80,6 +307,7 @@ class MenuController extends GetxController {
 
   void resetFoto() {
     fotoPath.value = null;
+    fotoBytes.value = null; // ✅
     fotoZoom.value = 1.0;
     fotoTurns.value = 0;
     fotoOffset.value = Offset.zero;
@@ -90,17 +318,18 @@ class MenuController extends GetxController {
     fotoSaturation.value = 1.0;
   }
 
-  // ==========================================
-  // VALIDASI KEAMANAN FOTO (3 lapis)
-  // ==========================================
-  Future<String?> validateFoto(XFile file) async {
-    final ext = file.path.split('.').last.toLowerCase();
+  Future<String?> validateFoto(XFile file, Uint8List bytes) async {
     const allowed = ['jpg', 'jpeg', 'png', 'webp'];
+
+    // ✅ WEB: file.path = blob URL tanpa ekstensi → prioritaskan file.name
+    String ext = file.name.split('.').last.toLowerCase();
+    if (!allowed.contains(ext)) {
+      ext = file.path.split('.').last.toLowerCase();
+    }
     if (!allowed.contains(ext)) {
       return 'Format .$ext tidak didukung. Hanya JPG, PNG, atau WEBP.';
     }
 
-    final bytes = await file.readAsBytes();
     if (bytes.length > 2 * 1024 * 1024) {
       return 'Ukuran maksimal 2MB (file Anda ${(bytes.length / 1024 / 1024).toStringAsFixed(1)}MB).';
     }
@@ -134,107 +363,6 @@ class MenuController extends GetxController {
     return null;
   }
 
-  // ==========================================
-  // DAFTAR MENU + SEARCH
-  // ==========================================
-  final searchQuery = ''.obs;
-
-  final menuList = <Map<String, dynamic>>[
-    {
-      'nama': 'Es Kopi Susu',
-      'kategori': 'Kopi',
-      'harga': 18000,
-      'deskripsi': 'Kopi susu gula aren signature',
-      'aktif': true,
-      'fotoPath': null,
-      'fotoZoom': 1.0,
-      'fotoTurns': 0,
-      'fotoOffset': Offset.zero,
-      'fotoFlipH': false,
-      'fotoFlipV': false,
-      'fotoBrightness': 1.0,
-      'fotoContrast': 1.0,
-      'fotoSaturation': 1.0,
-    },
-    {
-      'nama': 'Croissant',
-      'kategori': 'Snack',
-      'harga': 15000,
-      'deskripsi': 'Butter croissant fresh from oven',
-      'aktif': true,
-      'fotoPath': null,
-      'fotoZoom': 1.0,
-      'fotoTurns': 0,
-      'fotoOffset': Offset.zero,
-      'fotoFlipH': false,
-      'fotoFlipV': false,
-      'fotoBrightness': 1.0,
-      'fotoContrast': 1.0,
-      'fotoSaturation': 1.0,
-    },
-    {
-      'nama': 'Nasi Goreng OMG',
-      'kategori': 'Makanan',
-      'harga': 25000,
-      'deskripsi': '-',
-      'aktif': false,
-      'fotoPath': null,
-      'fotoZoom': 1.0,
-      'fotoTurns': 0,
-      'fotoOffset': Offset.zero,
-      'fotoFlipH': false,
-      'fotoFlipV': false,
-      'fotoBrightness': 1.0,
-      'fotoContrast': 1.0,
-      'fotoSaturation': 1.0,
-    },
-  ].obs;
-
-  List<Map<String, dynamic>> get filteredMenu {
-    return menuList.where((m) {
-      // Filter search nama
-      final matchQuery = (m['nama'] as String)
-          .toLowerCase()
-          .contains(searchQuery.value.toLowerCase());
-      // Filter kategori
-      final matchKategori = filterKategori.value == 'Semua' ||
-          (m['kategori'] as String) == filterKategori.value;
-      // Filter status aktif
-      final matchStatus = filterStatus.value == 'Semua' ||
-          (filterStatus.value == 'Aktif' && m['aktif'] == true) ||
-          (filterStatus.value == 'Nonaktif' && m['aktif'] == false);
-      return matchQuery && matchKategori && matchStatus;
-    }).toList();
-  }
-
-  void onSearchChanged(String v) => searchQuery.value = v;
-
-  // ✅ BARU: setter untuk filter
-  void setFilterKategori(String v) {
-    filterKategori.value = v;
-    Get.back();
-  }
-
-  void setFilterStatus(String v) {
-    filterStatus.value = v;
-    Get.back();
-  }
-
-  // ✅ BARU: cek apakah ada filter aktif
-  bool get hasActiveFilter =>
-      filterKategori.value != 'Semua' || filterStatus.value != 'Semua';
-
-  void toggleAktifMenu(Map<String, dynamic> m) {
-    m['aktif'] = !(m['aktif'] as bool);
-    menuList.refresh();
-  }
-
-  String formatRupiah(int v) => v.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
-
-  // ==========================================
-  // TAB
-  // ==========================================
   void changeTab(int index) {
     if (selectedTabIndex.value == index) return;
     selectedTabIndex.value = index;
@@ -246,70 +374,6 @@ class MenuController extends GetxController {
   }
 
   void onTabChanged(int index) => selectedTabIndex.value = index;
-
-  // ==========================================
-  // SIMPAN MENU
-  // ==========================================
-  void simpanMenu() {
-    if (namaController.text.trim().isEmpty) {
-      AppDialogs.showCustomSnackbar(
-        title: 'Validasi Gagal',
-        message: 'Nama menu wajib diisi.',
-        type: SnackbarType.warning,
-      );
-      return;
-    }
-    if (kategori.value.isEmpty) {
-      AppDialogs.showCustomSnackbar(
-        title: 'Validasi Gagal',
-        message: 'Silakan pilih kategori menu.',
-        type: SnackbarType.warning,
-      );
-      return;
-    }
-    if (hargaController.text.isEmpty) {
-      AppDialogs.showCustomSnackbar(
-        title: 'Validasi Gagal',
-        message: 'Harga jual dasar wajib diisi.',
-        type: SnackbarType.warning,
-      );
-      return;
-    }
-
-    menuList.insert(0, {
-      'nama': namaController.text.trim(),
-      'kategori': kategori.value,
-      'harga': int.parse(hargaController.text.replaceAll('.', '')),
-      'deskripsi': deskripsiController.text.trim().isEmpty
-          ? '-'
-          : deskripsiController.text.trim(),
-      'aktif': menuAktif.value,
-      'fotoPath': fotoPath.value,
-      'fotoZoom': fotoZoom.value,
-      'fotoTurns': fotoTurns.value,
-      'fotoOffset': fotoOffset.value,
-      'fotoFlipH': fotoFlipH.value,
-      'fotoFlipV': fotoFlipV.value,
-      'fotoBrightness': fotoBrightness.value,
-      'fotoContrast': fotoContrast.value,
-      'fotoSaturation': fotoSaturation.value,
-    });
-
-    AppDialogs.showCustomSnackbar(
-      title: 'Menu Tersimpan',
-      message: '${namaController.text.trim()} berhasil ditambahkan.',
-      type: SnackbarType.success,
-    );
-
-    namaController.clear();
-    hargaController.clear();
-    deskripsiController.clear();
-    kategori.value = '';
-    menuAktif.value = true;
-    resetFoto();
-    selectedTabIndex.value = 1;
-    tabPageController.jumpToPage(1);
-  }
 
   @override
   void onClose() {

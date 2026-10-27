@@ -17,6 +17,10 @@ abstract class Routes {
   static const tambahBarang = _Paths.tambahBarang; // ✅ BARU
   static const pengguna = _Paths.pengguna; // ✅ BARU
   static const tambahKaryawan = _Paths.tambahKaryawan; // di Routes
+  static const profilKaryawan = _Paths.profilKaryawan;
+  static const notifikasi = _Paths.notifikasi;
+  static const stokKritis = _Paths.stokKritis;
+  static const stokKaryawan = _Paths.stokKaryawan; // ✅ BARU
 }
 
 abstract class _Paths {
@@ -36,4 +40,8 @@ abstract class _Paths {
   static const tambahBarang = '/tambah-barang'; // ✅ BARU
   static const pengguna = '/pengguna'; // ✅ BARU
   static const tambahKaryawan = '/tambah-karyawan'; // di _Paths
+  static const profilKaryawan = '/profil-karyawan';
+  static const notifikasi = '/notifikasi';
+  static const stokKritis = '/stok-kritis';
+  static const stokKaryawan = '/stok-karyawan';
 }

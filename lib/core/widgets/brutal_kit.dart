@@ -1,4 +1,5 @@
 // PATH FILE: lib/core/widgets/brutal_kit.dart
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -206,11 +207,10 @@ class BrutalButton extends StatelessWidget {
         ),
         child: Center(
           child: loading
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2.5, color: Colors.white),
+              ? const BouncingDotsLoader(
+                  color: Colors.white,
+                  dotSize: 7,
+                  spacing: 5,
                 )
               : Row(
                   mainAxisSize: MainAxisSize.min,
@@ -481,4 +481,138 @@ class _DashedHLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ==========================================
+// LOADING 3 DOTS BOUNCE — VERSI SMOOTH
+// ==========================================
+class BouncingDotsLoader extends StatefulWidget {
+  final Color color;
+  final double dotSize;
+  final double spacing;
+  final double bounceHeight;
+  final Duration duration;
+
+  const BouncingDotsLoader({
+    super.key,
+    this.color = Colors.white,
+    this.dotSize = 7,
+    this.spacing = 5,
+    this.bounceHeight = 6,
+    this.duration = const Duration(milliseconds: 1400),
+  });
+
+  @override
+  State<BouncingDotsLoader> createState() => _BouncingDotsLoaderState();
+}
+
+class _BouncingDotsLoaderState extends State<BouncingDotsLoader>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: widget.duration)
+      ..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(3, _buildDot),
+      ),
+    );
+  }
+
+  Widget _buildDot(int index) {
+    // ✅ Stagger antar dot (offset 0.2) + jendela istirahat 40%
+    final double t = (_controller.value + index * 0.2) % 1.0;
+    const double activeWindow = 0.6; // 60% bounce, 40% istirahat
+
+    double lift = 0;
+    if (t < activeWindow) {
+      final double x = t / activeWindow; // 0..1
+      lift = math.sin(math.pi * x); // naik-turun mulus (0→1→0)
+      lift = Curves.easeInOut.transform(lift); // ✅ pelembut tambahan
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: widget.spacing / 2),
+      child: Transform.translate(
+        offset: Offset(0, -widget.bounceHeight * lift),
+        child: Container(
+          width: widget.dotSize,
+          height: widget.dotSize,
+          decoration:
+              BoxDecoration(color: widget.color, shape: BoxShape.circle),
+        ),
+      ),
+    );
+  }
+}
+
+// ========================================================================
+// BrutalTap: wrapper universal untuk efek sentuh A + B pada brutalisme.
+//   A (scale) : button mengecil 4% saat ditekan.
+//   B (shift) : button ter-translate ke arah shadow-nya saat ditekan.
+//
+// PAKAI: bungkus button terluar (GestureDetector / SizedBox>ElevatedButton).
+//   BrutalTap(shadowOffset: 2, child: myButton)
+//
+// shadowOffset = nilai offset shadow button (1,2,3,4). Pakai 0 jika
+// button tidak punya boxShadow.
+// ========================================================================
+class BrutalTap extends StatefulWidget {
+  final Widget child;
+  final double shadowOffset;
+
+  const BrutalTap({
+    super.key,
+    required this.child,
+    this.shadowOffset = 0,
+  });
+
+  @override
+  State<BrutalTap> createState() => _BrutalTapState();
+}
+
+class _BrutalTapState extends State<BrutalTap> {
+  bool _pressed = false;
+
+  void _set(bool v) {
+    if (mounted && _pressed != v) setState(() => _pressed = v);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) => _set(true),
+      onPointerUp: (_) => _set(false),
+      onPointerCancel: (_) => _set(false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.96 : 1.0,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOut,
+          transform: _pressed
+              ? (Matrix4.identity()
+                ..translate(widget.shadowOffset, widget.shadowOffset))
+              : Matrix4.identity(),
+          child: widget.child,
+        ),
+      ),
+    );
+  }
 }

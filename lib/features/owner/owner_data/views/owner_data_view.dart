@@ -1,3 +1,4 @@
+// PATH FILE: lib/features/owner/owner_data/views/owner_data_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,23 +6,28 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../app/routes/app_pages.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/app_dialogs.dart';
+import '../../../../core/widgets/brutal_kit.dart';
 import '../controllers/owner_data_controller.dart';
 
 class OwnerDataView extends GetView<OwnerDataController> {
   const OwnerDataView({super.key});
+
+  static const Color _orange = Color(0xFFFFB800);
+  static const Color _green = Color(0xFF2D7A4F);
+  static const Color _brown = Color(0xFF8B4513);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.cream,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 96),
+        padding: const EdgeInsets.only(bottom: 44),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildHeader(context),
             _buildContent(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             Center(
               child: Text('OMG COFFEE · COFFEE KELILING',
                   style: GoogleFonts.inter(
@@ -37,49 +43,65 @@ class OwnerDataView extends GetView<OwnerDataController> {
   }
 
   // ==========================================
-  // HEADER PINK (AMAN: hanya Container + Column)
+  // HEADER PINK + CAROUSEL
   // ==========================================
   Widget _buildHeader(BuildContext context) {
     final topPad = MediaQuery.of(context).padding.top;
     return Container(
       color: AppColors.primary,
-      padding: EdgeInsets.fromLTRB(20, topPad + 14, 20, 18),
+      padding: EdgeInsets.fromLTRB(16, topPad + 12, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Judul 1 baris (tidak enter)
           Text('MASTER DATA',
               style: GoogleFonts.outfit(
                   color: Colors.white,
-                  fontSize: 26,
+                  fontSize: 24,
                   fontWeight: FontWeight.w900,
                   shadows: const [
-                    Shadow(color: Colors.black, offset: Offset(2, 2))
+                    Shadow(color: AppColors.ink, offset: Offset(2, 2))
                   ])),
           const SizedBox(height: 4),
-          Text('Kelola katalog, stok, armada & tim',
+          Text('Kelola katalog, stok & tim',
               style: GoogleFonts.inter(
                   color: Colors.white70,
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: FontWeight.w600)),
-          const SizedBox(height: 14),
-
-          // Carousel
+          const SizedBox(height: 16),
           SizedBox(
-            height: 172,
+            height: 148,
             child: PageView(
+              padEnds: false,
               controller: controller.pageController,
               onPageChanged: controller.onCarouselChanged,
               children: [
-                _buildSlideMenu(),
-                _buildSlideStok(),
-                _buildSlideTim(),
+                _slideShell(
+                  icon: Icons.coffee_rounded,
+                  accent: AppColors.primary,
+                  title: 'RINGKASAN MENU',
+                  bigText: '${controller.totalMenu.value} Menu Aktif',
+                  smallText: 'Kopi, Non-Kopi, Snack, Makanan',
+                ),
+                _slideShell(
+                  icon: Icons.eco_rounded,
+                  accent: _green,
+                  title: 'BAHAN BAKU',
+                  bigText: '${controller.stokKritis.length} Bahan Kritis',
+                  smallText: controller.stokKritis.join(', '),
+                ),
+                _slideShell(
+                  icon: Icons.group_rounded,
+                  accent: _green,
+                  title: 'TIM ANDA',
+                  bigText:
+                      '${controller.jumlahKaryawan.value} Karyawan & ${controller.jumlahInvestor.value} Investor',
+                  smallText:
+                      '${controller.sudahCheckIn.value} karyawan sudah check-in hari ini',
+                ),
               ],
             ),
           ),
           const SizedBox(height: 12),
-
-          // Dots indicator
           Obx(() => Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(3, (i) {
@@ -88,14 +110,15 @@ class OwnerDataView extends GetView<OwnerDataController> {
                     onTap: () => controller.goToSlide(i),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 250),
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: active ? 22 : 8,
-                      height: 8,
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: active ? 18 : 6,
+                      height: 6,
                       decoration: BoxDecoration(
                         color: active
                             ? Colors.white
                             : Colors.white.withOpacity(0.4),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(color: AppColors.ink, width: 1),
                       ),
                     ),
                   );
@@ -107,11 +130,81 @@ class OwnerDataView extends GetView<OwnerDataController> {
   }
 
   // ==========================================
+  // SLIDE CAROUSEL (sesuai desain: tanpa chip)
+  // ==========================================
+  Widget _slideShell({
+    required IconData icon,
+    required Color accent,
+    required String title,
+    required String bigText,
+    required String smallText,
+  }) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(0, 4, 12, 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.appWhite,
+        borderRadius: BorderRadius.circular(18),
+        border: appBorder(),
+        boxShadow: AppShadows.hard(4),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: accent,
+                  borderRadius: BorderRadius.circular(10),
+                  border: appBorder(1.5),
+                ),
+                child: Icon(icon, color: Colors.white, size: 16),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        color: AppColors.ink,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(bigText,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.outfit(
+                  color: AppColors.ink,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900)),
+          const SizedBox(height: 10),
+          const _DashedLine(),
+          const SizedBox(height: 8),
+          Text(smallText,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                  color: AppColors.muted,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================
   // KONTEN CREAM
   // ==========================================
   Widget _buildContent() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -122,276 +215,79 @@ class OwnerDataView extends GetView<OwnerDataController> {
             subtitle: 'Catat & rekap serah terima barang',
             onTap: () => Get.toNamed(Routes.distribusi),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildSquareCard(
-                  icon: Icons.coffee_rounded,
-                  iconColor: AppColors.yellow,
-                  title: 'Menu',
-                  subtitle: 'Daftar jual & harga',
-                  onTap: () => Get.toNamed(Routes.menu),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildSquareCard(
-                  icon: Icons.water_drop_rounded,
-                  iconColor: const Color(0xFF2D7A4F),
-                  title: 'Bahan Baku',
-                  subtitle: 'Kopi, susu, gula, dll.',
-                  onTap: () => Get.toNamed(Routes.bahanBaku),
-                ),
-              ),
-            ],
-          ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildSquareCard(
-                  icon: Icons.menu_book_rounded,
-                  iconColor: AppColors.primary,
-                  title: 'Resep Menu',
-                  subtitle: 'Standar takaran per menu',
-                  onTap: () => Get.toNamed(Routes.resepMenu),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildSquareCard(
-                  icon: Icons.inventory_2_rounded,
-                  iconColor: Colors.orange,
-                  title: 'Barang Operasional',
-                  subtitle: 'Cup, sedotan, tisu, dll.',
-                  onTap: () =>
-                      Get.toNamed(Routes.tambahBarang), // ✅ TAMBAHKAN INI
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // --- Card Pengguna ---
-          _buildCard(
-            icon: Icons.group_rounded,
-            iconColor: const Color(0xFF2D7A4F),
-            title: 'Pengguna',
-            subtitle: '4 karyawan & 2 investor',
-            onTap: () => Get.toNamed(Routes.pengguna), // ✅ TAMBAHKAN INI
-          ),
-          const SizedBox(height: 16),
-
-          // --- Card Rombong ---
-          _buildRombongCard(),
-        ],
-      ),
-    );
-  }
-
-  // ==========================================
-  // SLIDE CAROUSEL (AMAN: tanpa widget custom)
-  // ==========================================
-  Widget _buildSlideMenu() {
-    return Obx(() => _slideShell(
-          icon: Icons.coffee_rounded,
-          accent: AppColors.primary,
-          title: 'RINGKASAN MENU',
-          bigText: '${controller.totalMenu.value} Menu Aktif',
-          smallText: 'Kopi, Non-Kopi, Snack, Makanan',
-          chipText: '${controller.totalKategori.value} Kategori',
-        ));
-  }
-
-  Widget _buildSlideStok() {
-    return Obx(() => _slideShell(
-          icon: Icons.warning_amber_rounded,
-          accent: const Color(0xFFFFB800),
-          title: 'STOK KRITIS',
-          bigText: '${controller.stokKritis.length} Bahan Kritis',
-          smallText: controller.stokKritis.join(', '),
-          chipText: 'Restock!',
-        ));
-  }
-
-  Widget _buildSlideTim() {
-    return Obx(() => _slideShell(
-          icon: Icons.group_rounded,
-          accent: const Color(0xFF2D7A4F),
-          title: 'TIM ANDA',
-          bigText:
-              '${controller.jumlahKaryawan.value} Karyawan & ${controller.jumlahInvestor.value} Investor',
-          smallText:
-              '${controller.sudahCheckIn.value} karyawan sudah check-in hari ini',
-          chipText: 'Hari Ini',
-        ));
-  }
-
-  Widget _slideShell({
-    required IconData icon,
-    required Color accent,
-    required String title,
-    required String bigText,
-    required String smallText,
-    required String chipText,
-  }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 0),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.black, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black,
-            offset: const Offset(4, 4),
-            blurRadius: 0,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: accent.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.black, width: 1.5),
-                ),
-                child: Icon(icon, color: accent, size: 19),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(title,
-                    style: GoogleFonts.inter(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8)),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: accent.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: accent, width: 1.5),
-                ),
-                child: Text(chipText,
-                    style: GoogleFonts.inter(
-                        color: accent,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w800)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(bigText,
-              style: GoogleFonts.outfit(
-                  color: Colors.black,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900)),
-          const SizedBox(height: 10),
-          // Dashed line sederhana
-          SizedBox(
-            height: 2,
+          IntrinsicHeight(
             child: Row(
-              children: List.generate(
-                  30,
-                  (i) => Expanded(
-                        child: Container(
-                          color: i % 2 == 0
-                              ? AppColors.muted.withOpacity(0.5)
-                              : Colors.transparent,
-                          height: 2,
-                        ),
-                      )),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(smallText,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(color: AppColors.muted, fontSize: 11)),
-        ],
-      ),
-    );
-  }
-
-  // ==========================================
-  // KARTU KOTAK (AMAN: tanpa widget custom)
-  // ==========================================
-  Widget _buildSquareCard({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap ??
-          () => AppDialogs.showCustomSnackbar(
-                title: 'Segera Hadir',
-                message: 'Halaman $title sedang dalam pengembangan.',
-                type: SnackbarType.info,
-              ),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.black, width: 2),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black,
-              offset: Offset(4, 4),
-              blurRadius: 0,
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: iconColor,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.black, width: 2),
-                  ),
-                  child: Icon(icon, color: Colors.white, size: 20),
-                ),
-                const Icon(Icons.chevron_right_rounded,
-                    color: Colors.black, size: 18),
+                Expanded(
+                    child: _buildSquareCard(
+                        Icons.coffee_rounded,
+                        _orange,
+                        'Menu',
+                        'Daftar jual & harga',
+                        () => Get.toNamed(Routes.menu))),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: _buildSquareCard(
+                        Icons.eco_rounded,
+                        _green,
+                        'Bahan Baku',
+                        'Kopi, susu, gula, dll.',
+                        () => Get.toNamed(Routes.bahanBaku))),
               ],
             ),
-            const SizedBox(height: 14),
-            Text(title,
-                style: GoogleFonts.inter(
-                    color: Colors.black,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800)),
-            const SizedBox(height: 2),
-            Text(subtitle,
-                style:
-                    GoogleFonts.inter(color: AppColors.muted, fontSize: 9.5)),
-          ],
-        ),
+          ),
+          const SizedBox(height: 12),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                    child: _buildSquareCard(
+                        Icons.receipt_long_rounded,
+                        AppColors.primary,
+                        'Resep Menu',
+                        'Standar takaran menu',
+                        () => Get.toNamed(Routes.resepMenu))),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: _buildSquareCard(
+                        Icons.inventory_2_rounded,
+                        _orange,
+                        'Barang Operasional',
+                        'Cup, sedotan, tisu, dll.',
+                        () => Get.toNamed(Routes.tambahBarang))),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildCard(
+            icon: Icons.airport_shuttle_rounded,
+            iconColor: _brown,
+            title: 'Rombong',
+            subtitle: 'Armada, rute & titik jualan',
+            onTap: () => AppDialogs.showCustomSnackbar(
+              title: 'Segera Hadir',
+              message: 'Halaman Rombong sedang dalam pengembangan.',
+              type: SnackbarType.info,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildCard(
+            icon: Icons.group_rounded,
+            iconColor: _green,
+            title: 'Pengguna',
+            subtitle: '4 karyawan & 2 investor',
+            onTap: () => Get.toNamed(Routes.pengguna),
+          ),
+        ],
       ),
     );
   }
 
   // ==========================================
-  // KARTU LEBAR (AMAN: tanpa widget custom)
+  // CARD LEBAR (circle icon solid + circle chevron)
   // ==========================================
   Widget _buildCard({
     required IconData icon,
@@ -408,30 +304,24 @@ class OwnerDataView extends GetView<OwnerDataController> {
                 type: SnackbarType.info,
               ),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.appWhite,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.black, width: 2),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black,
-              offset: Offset(4, 4),
-              blurRadius: 0,
-            ),
-          ],
+          border: appBorder(),
+          boxShadow: AppShadows.hard(3),
         ),
         child: Row(
           children: [
             Container(
-              width: 46,
-              height: 46,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.black, width: 1.5),
+                color: iconColor,
+                shape: BoxShape.circle,
+                border: appBorder(1.5),
               ),
-              child: Icon(icon, color: iconColor, size: 21),
+              child: Icon(icon, color: Colors.white, size: 18),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -440,95 +330,128 @@ class OwnerDataView extends GetView<OwnerDataController> {
                 children: [
                   Text(title,
                       style: GoogleFonts.inter(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800)),
+                          color: AppColors.ink,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900)),
                   const SizedBox(height: 2),
                   Text(subtitle,
                       style: GoogleFonts.inter(
-                          color: AppColors.muted, fontSize: 10)),
+                          color: AppColors.muted,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded,
-                color: Colors.black, size: 22),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ==========================================
-  // CARD ROMBONG (armada, rute & titik jualan)
-  // ==========================================
-  Widget _buildRombongCard() {
-    return GestureDetector(
-      onTap: () => AppDialogs.showCustomSnackbar(
-        title: 'Segera Hadir',
-        message: 'Halaman Rombong sedang dalam pengembangan.',
-        type: SnackbarType.info,
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.black, width: 2),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black,
-              offset: Offset(4, 4),
-              blurRadius: 0,
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Icon chip kiri (coklat muda + icon cart)
             Container(
-              width: 48,
-              height: 48,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                color: const Color(0xFFF1E4DA), // coklat muda
+                color: AppColors.appWhite,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.black, width: 2),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black,
-                    offset: Offset(2, 2),
-                    blurRadius: 0,
-                  ),
-                ],
+                border: appBorder(1.5),
+                boxShadow: AppShadows.hard(2),
               ),
-              child: const Icon(Icons.shopping_cart_rounded,
-                  color: const Color(0xFF6B4F3A), size: 22),
+              child: const Icon(Icons.chevron_right_rounded,
+                  color: AppColors.ink, size: 16),
             ),
-            const SizedBox(width: 12),
-
-            // Teks tengah
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Rombong',
-                      style: GoogleFonts.inter(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 2),
-                  Text('Armada, rute & titik jualan',
-                      style: GoogleFonts.inter(
-                          color: AppColors.muted, fontSize: 10)),
-                ],
-              ),
-            ),
-
-            // Chevron kanan
-            const Icon(Icons.chevron_right_rounded,
-                color: Colors.black, size: 22),
           ],
         ),
       ),
     );
   }
+
+  // ==========================================
+  // CARD GRID 2x2
+  // ==========================================
+  Widget _buildSquareCard(IconData icon, Color iconColor, String title,
+      String subtitle, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.appWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: appBorder(),
+          boxShadow: AppShadows.hard(3),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: iconColor,
+                    shape: BoxShape.circle,
+                    border: appBorder(1.5),
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 18),
+                ),
+                const Spacer(),
+                const Icon(Icons.chevron_right_rounded,
+                    color: AppColors.ink, size: 14),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(title,
+                style: GoogleFonts.inter(
+                    color: AppColors.ink,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900)),
+            const SizedBox(height: 2),
+            Text(subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                    color: AppColors.muted,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ====================================================
+// DIVIDER PUTUS-PUTUS
+// ====================================================
+class _DashedLine extends StatelessWidget {
+  const _DashedLine();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 2,
+      child: CustomPaint(
+        painter: _DashedLinePainter(AppColors.muted.withOpacity(0.4)),
+      ),
+    );
+  }
+}
+
+class _DashedLinePainter extends CustomPainter {
+  final Color color;
+  _DashedLinePainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 2;
+    double x = 0;
+    while (x < size.width) {
+      final end = (x + 6) > size.width ? size.width : (x + 6);
+      canvas.drawLine(
+          Offset(x, size.height / 2), Offset(end, size.height / 2), paint);
+      x += 10;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

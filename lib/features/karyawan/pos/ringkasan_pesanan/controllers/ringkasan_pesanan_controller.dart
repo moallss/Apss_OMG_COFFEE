@@ -18,9 +18,20 @@ class RingkasanPesananController extends GetxController {
   final cashController = TextEditingController();
   final catatanController = TextEditingController();
 
+  // ===== QRIS (statis/dinamis + status) =====
+  final qrisMode = 'STATIS'.obs; // STATIS / DINAMIS (fallback)
+  final qrisGenerated = false.obs; // QR dinamis sudah dibuat?
+  final qrisPaid = false.obs; // pembayaran QRIS masuk?
+
   // Snapshot struk
   final trxId = ''.obs;
-  final trxDate = ''.obs;
+  final trxDate = ''.obs; // tanggal saja, mis. "Sab, 30 Apr 2026"
+  final trxTime = ''.obs; // jam saja,  mis. "09:14 WIB"  (poin 1)
+  final costumerId = ''.obs; // INV-####-YYYY (poin 3c)
+  final orderTime = ''.obs; // jam pesan  "HH:mm WIB"
+  final doneTime = ''.obs; // jam selesai "HH:mm WIB"
+  final durationMin = 0.obs; // durasi pengerjaan (menit)
+  DateTime? _orderAt;
   final receiptMethod = ''.obs;
   final receiptTotal = 0.obs;
   final receiptCash = 0.obs;
@@ -43,6 +54,9 @@ class RingkasanPesananController extends GetxController {
     localCart.assignAll(
       posController.cart.map((e) => Map<String, dynamic>.from(e)).toList(),
     );
+    // jam pesan = saat sheet ringkasan dibuka untuk order ini
+    _orderAt = DateTime.now();
+    orderTime.value = _fmtClock(_orderAt!);
   }
 
   // Simpan cart lokal → POS (saat sheet ditutup)
@@ -73,8 +87,13 @@ class RingkasanPesananController extends GetxController {
   bool get canProcess {
     if (totalItem == 0) return false;
     if (selectedMethod.value == 'Tunai') return isCashSufficient;
+    // QRIS dinamis: tidak boleh selesai sebelum status "SUDAH MASUK"
+    if (qrisMode.value == 'DINAMIS' && !qrisPaid.value) return false;
     return true;
   }
+
+  String _fmtClock(DateTime t) =>
+      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')} WIB';
 
   String formatRupiah(int angka) {
     return 'Rp ${angka.toString().replaceAllMapped(
@@ -126,10 +145,21 @@ class RingkasanPesananController extends GetxController {
 
   bool processPayment() {
     if (!canProcess) return false;
-    trxId.value =
-        '#TRX-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+    final now = DateTime.now();
+    trxId.value = '#TRX-${now.millisecondsSinceEpoch.toString().substring(7)}';
+    // poin 1: format tanggal DD/MM/YYYY
     trxDate.value =
-        '${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year} ${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}';
+        '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
+    trxTime.value =
+        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')} WIB';
+    // poin 3c: ID kostumer gaya invoice (fiktif sampai backend pelanggan siap)
+    final inv = (now.millisecondsSinceEpoch % 9000) + 1000;
+    costumerId.value = 'INV-$inv-${now.year}';
+    orderTime.value = _fmtClock(now); // #2: jam pesan = saat bayar selesai
+    doneTime.value = _fmtClock(now);
+    durationMin.value =
+        _orderAt == null ? 0 : now.difference(_orderAt!).inMinutes;
+
     receiptMethod.value = selectedMethod.value;
     receiptTotal.value = grandTotal;
     receiptCash.value =
@@ -156,11 +186,25 @@ class RingkasanPesananController extends GetxController {
     Get.back();
   }
 
+  // Dipanggil dari HALAMAN STRUK: kosongkan order + tutup struk & ringkasan.
+  // Asumsi stack: [shell/POS, ringkasan(sheet), struk] => pop x2 kembali ke POS.
+  // Jika POS-mu adalah route tersendiri (bukan tab), sesuaikan jumlah Get.back().
+  void completeAndClose() {
+    posController.cart.clear();
+    localCart.clear();
+    _reset();
+    Get.back(); // pop struk
+    Get.back(); // pop ringkasan
+  }
+
   void _reset() {
     cashReceived.value = 0;
     cashController.clear();
     catatanController.clear();
     selectedMethod.value = 'Tunai';
+    qrisMode.value = 'STATIS';
+    qrisGenerated.value = false;
+    qrisPaid.value = false;
   }
 
   @override

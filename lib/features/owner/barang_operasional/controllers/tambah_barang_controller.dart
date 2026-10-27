@@ -102,7 +102,6 @@ class TambahBarangController extends GetxController {
       daftarBarang.where((b) => b['status'] == 'habis').length;
   int get totalBarang => daftarBarang.length;
 
-
   void changeTab(int index) {
     selectedTabIndex.value = index;
   }
@@ -139,6 +138,10 @@ class TambahBarangController extends GetxController {
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
   }
 
+  void toggleAktifDigunakan() {
+    aktifDigunakan.value = !aktifDigunakan.value;
+  }
+
   void simpanBarang() {
     Get.snackbar(
       'Berhasil',
@@ -148,5 +151,4 @@ class TambahBarangController extends GetxController {
       snackPosition: SnackPosition.TOP,
     );
   }
-  
 }
